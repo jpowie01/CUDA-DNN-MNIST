@@ -1,14 +1,14 @@
 class Tensor1D {
 private:
     int  size;
-    int* devData;
+    float* devData;
 
 public:
-    Tensor1D(int size, int* data);
+    Tensor1D(int size, float* data);
     ~Tensor1D();
 
-    int* getDeviceData();
-    int* fetchDataFromDevice();
+    float* getDeviceData();
+    float* fetchDataFromDevice();
     
     void add(Tensor1D* tensor);
 };

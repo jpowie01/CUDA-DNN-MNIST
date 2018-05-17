@@ -1,30 +1,30 @@
 #include "tensor1d.h"
 
 __global__
-void kAdd(int *a, int *b, int N) {
+void kAdd(float *a, float *b, int N) {
     int i = blockIdx.x;
     if (i < N) {
         a[i] += b[i];
     }
 }
 
-Tensor1D::Tensor1D(int size, int* hostData) {
+Tensor1D::Tensor1D(int size, float* hostData) {
     this->size = size;
-    cudaMalloc((void **)&(this->devData), this->size*sizeof(int));
-    cudaMemcpy(devData, hostData, this->size*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&(this->devData), this->size*sizeof(float));
+    cudaMemcpy(devData, hostData, this->size*sizeof(float), cudaMemcpyHostToDevice);
 }
 
 Tensor1D::~Tensor1D() {
     cudaFree(this->devData);
 }
 
-int* Tensor1D::getDeviceData() {
+float* Tensor1D::getDeviceData() {
     return this->devData;
 }
 
-int* Tensor1D::fetchDataFromDevice() {
-    int* hostData = (int*)malloc(this->size*sizeof(int));
-    cudaMemcpy(hostData, this->devData, this->size*sizeof(int), cudaMemcpyDeviceToHost);
+float* Tensor1D::fetchDataFromDevice() {
+    float* hostData = (float*)malloc(this->size*sizeof(float));
+    cudaMemcpy(hostData, this->devData, this->size*sizeof(float), cudaMemcpyDeviceToHost);
     return hostData;
 }
 
