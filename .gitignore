@@ -1,5 +1,11 @@
 # Build output
 build/
 
+# Dataset
+data/
+
 # VIM
 *.swp
+
+# macOS
+.DS_Store

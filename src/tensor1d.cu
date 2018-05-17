@@ -1,7 +1,7 @@
 #include "tensor1d.h"
 
 __global__
-void kadd(int *a, int *b, int N) {
+void kAdd(int *a, int *b, int N) {
     int i = blockIdx.x;
     if (i < N) {
         a[i] += b[i];
@@ -29,5 +29,5 @@ int* Tensor1D::fetchDataFromDevice() {
 }
 
 void Tensor1D::add(Tensor1D* tensor) {
-    kadd<<<this->size, 1>>>(this->getDeviceData(), tensor->getDeviceData(), this->size);
+    kAdd<<<this->size, 1>>>(this->getDeviceData(), tensor->getDeviceData(), this->size);
 }
