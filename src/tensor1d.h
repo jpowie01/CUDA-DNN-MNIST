@@ -1,3 +1,7 @@
+#pragma once
+#ifndef TENSOR1D_H
+#define TENSOR1D_H
+
 class Tensor1D {
 private:
     int  size;
@@ -12,3 +16,5 @@ public:
     
     void add(Tensor1D* tensor);
 };
+
+#endif  /* !TENSOR1D_H */
