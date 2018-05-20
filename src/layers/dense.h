@@ -5,18 +5,17 @@
 #include <stdio.h>
 #include <cmath>
 
-#include "tensor2d.h"
-#include "utils.h"
+#include "../tensor/tensor2d.h"
+#include "../utils.h"
+#include "base.h"
 
 
-class DenseLayer {
+class DenseLayer: public Layer {
 private:
     int input;
     int output;
     
     Tensor2D* inputData;
-    Tensor2D* weights;
-    Tensor2D* bias;
 
 public:
     DenseLayer(int input, int output);

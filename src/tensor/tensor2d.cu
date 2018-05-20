@@ -10,6 +10,15 @@ void kAdd(float *a, float *b, int sizeX, int sizeY) {
 }
 
 __global__
+void kSubtract(float *a, float *b, int sizeX, int sizeY) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x < sizeX && y < sizeY) {
+        a[y*sizeY + x] -= b[y*sizeY + x];
+    }
+}
+
+__global__
 void kScale(float *a, float factor, int sizeX, int sizeY) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -36,14 +45,13 @@ void kMultiply(float *a, int aX, int aY, float* b, int bX, int bY, float *c)
 __global__
 void kMultiplyByTransposition(float *a, int aX, int aY, float* b, int bX, int bY, float *c)
 {
-    // TODO: Check if this implementation is fine... May be broken :/
     // TODO: This implementation is very basic. Please improve me!
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col < bY && row < aY) {
         float sum = 0.0f;
         for (int i = 0; i < aX; i++) {
-            sum += a[row*aX+i] * b[row*bY+i];
+            sum += a[row*aX+i] * b[col*bX+i];
         }
         c[row*bY+col] = sum;
     }
@@ -52,14 +60,13 @@ void kMultiplyByTransposition(float *a, int aX, int aY, float* b, int bX, int bY
 __global__
 void kTransposeAndMultiply(float *a, int aX, int aY, float* b, int bX, int bY, float *c)
 {
-    // TODO: Check if this implementation is fine... May be broken :/
     // TODO: This implementation is very basic. Please improve me!
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col < bX && row < aX) {
         float sum = 0.0f;
-        for (int i = 0; i < aY; i++) {
-            sum += a[i*aY+col] * b[i*bX+col];
+        for (int i = 0; i < bY; i++) {
+            sum += a[i*aX+row] * b[i*bX+col];
         }
         c[row*bX+col] = sum;
     }
@@ -116,6 +123,13 @@ void Tensor2D::add(Tensor2D* tensor) {
     kAdd<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
 }
 
+void Tensor2D::subtract(Tensor2D* tensor) {
+    dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
+                   (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
+    kSubtract<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
+}
+
 void Tensor2D::scale(float factor) {
     dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
@@ -144,7 +158,7 @@ Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor) {
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output);
 
-    return new Tensor2D(tensor->sizeY, this->sizeY, output);
+    return new Tensor2D(this->sizeY, tensor->sizeY, output);
 }
 
 Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor) {

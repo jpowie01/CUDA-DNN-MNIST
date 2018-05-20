@@ -9,6 +9,7 @@ This project is an example implementation for training simple feed forward neura
 To compile and run this project, all you need is Make and NVCC. Then, simply run:
 
 ```bash
+$> make dataset
 $> make build
 $> make run
 ```

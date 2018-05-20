@@ -1,6 +1,6 @@
 #pragma once
-#ifndef TENSOR1D_H
-#define TENSOR1D_H
+#ifndef TENSOR2D_H
+#define TENSOR2D_H
 
 class Tensor2D {
 public:
@@ -17,6 +17,7 @@ public:
     float** fetchDataFromDevice();
     
     void add(Tensor2D* tensor);
+    void subtract(Tensor2D* tensor);
     void scale(float factor);
     Tensor2D* multiply(Tensor2D* tensor);
     Tensor2D* multiplyByTransposition(Tensor2D* tensor);

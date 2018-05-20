@@ -2,14 +2,19 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "layers/dense.h"
+#include "layers/relu.h"
+#include "optimizers/sgd.h"
+#include "loss/crossentropy.h"
+#include "models/sequential.h"
 #include "utils.h"
-#include "dense.h"
 
 
 int main() {
     // Always initialize seed to some random value
     // TODO: Maybe it is worth to fix it for experiments?
-    srand(static_cast<unsigned>(time(0)));
+    //srand(static_cast<unsigned>(time(0)));
+    srand(123123123);
 
     // Prepare some example input data - for now it is just random noise
     float** rawExampleData = new float*[16];
@@ -22,39 +27,75 @@ int main() {
     }
     Tensor2D* exampleData = new Tensor2D(28*28, 16, rawExampleData);
 
-    // Prepare all layers
-    DenseLayer* inputLayer = new DenseLayer(28*28, 1024);
-    DenseLayer* hiddenLayer = new DenseLayer(1024, 1024);
-    DenseLayer* outputLayer = new DenseLayer(1024, 10);
+    // Prepare some example labels for above input data - for now it is just random noise
+    float** rawExampleLabels = new float*[16];
+    *rawExampleLabels = new float[16*10];
+    for (int i = 1; i < 16; i++) rawExampleLabels[i] = rawExampleLabels[i-1] + 10;
+    for (int batch = 0; batch < 16; batch++) {
+        int randomLabel = randomInt(0, 9);
+        for (int i = 0; i < 10; i++) {
+            rawExampleLabels[batch][i] = 0;
+        }
+        rawExampleLabels[batch][randomLabel] = 1;
+    }
+    Tensor2D* labels = new Tensor2D(10, 16, rawExampleLabels);
 
-    // Forward pass
-    printf("\nForward => First Layer:\n");
-    Tensor2D* afterInput = inputLayer->forward(exampleData);
-    printf("\nForward => Second Layer:\n");
-    Tensor2D* afterHidden = hiddenLayer->forward(afterInput);
-    printf("\nForward => Third Layer:\n");
-    Tensor2D* afterOutput = outputLayer->forward(afterHidden);
+    // Prepare optimizer and loss function
+    SGDOptimizer* optimizer = new SGDOptimizer(0.0001);
+    CrossEntropyLoss* loss = new CrossEntropyLoss();
+
+    // Prepare model
+    SequentialModel* model = new SequentialModel(optimizer, loss);
+    model->addLayer(new DenseLayer(28*28, 1024));
+    model->addLayer(new ReLuLayer(1024));
+    model->addLayer(new DenseLayer(1024, 1024));
+    model->addLayer(new ReLuLayer(1024));
+    model->addLayer(new DenseLayer(1024, 10));
+
+    // Run some epochs
+    int epochs = 18;  // TODO: Put it somewhere else to simplify experiments!
+    for (int i = 0; i < epochs; i++) {
+        // Forward pass
+        Tensor2D* output = model->forward(exampleData);
+
+        // Output for this example
+        printf("\nClassification:\n");
+        float** classification = output->fetchDataFromDevice();
+        for (int y = 0; y < 16; y++) {
+            printf("Image %d => ", y);
+            for (int x = 0; x < 10; x++) {
+                printf("[%d]: %.5f; ", x, classification[y][x]);
+            }
+            printf("\n");
+        }
+
+        // Output for this example
+        printf("\nLabels:\n");
+        float** previewLabels = labels->fetchDataFromDevice();
+        for (int y = 0; y < 16; y++) {
+            printf("Image %d => ", y);
+            for (int x = 0; x < 10; x++) {
+                printf("[%d]: %.5f; ", x, previewLabels[y][x]);
+            }
+            printf("\n");
+        }
+
+        // Backward pass
+        model->backward(output, labels);
+    }
 
     // Output for this example
-    printf("\nClassification:\n");
-    float** classification = afterOutput->fetchDataFromDevice();
+    printf("\nLabels:\n");
+    float** previewLabels = labels->fetchDataFromDevice();
     for (int y = 0; y < 16; y++) {
         printf("Image %d => ", y);
         for (int x = 0; x < 10; x++) {
-            printf("[%d]: %.2f; ", x, classification[y][x]);
+            printf("[%d]: %.2f; ", x, previewLabels[y][x]);
         }
         printf("\n");
     }
 
-    // Backward pass
-    printf("\nBackward => Third Layer:\n");
-    Tensor2D* backwardFromOutput = outputLayer->backward(afterOutput);
-    printf("\nBackward => Second Layer:\n");
-    Tensor2D* backwardFromHidden = hiddenLayer->backward(backwardFromOutput);
-    printf("\nBackward => First Layer:\n");
-    Tensor2D* backwardFromInput = inputLayer->backward(backwardFromHidden);
-
-    // Clean memory and exit
+    // TODO: Clean memory and exit
     /*
     delete tensorA;
     delete tensorB;

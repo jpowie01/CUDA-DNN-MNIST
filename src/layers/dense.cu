@@ -12,7 +12,7 @@ DenseLayer::DenseLayer(int input, int output) {
 
     // Fill weights with some float numbers
     float minWeight = -1.0f / sqrt(input);
-    float maxWeight = -1.0f / sqrt(input);
+    float maxWeight = 1.0f / sqrt(input);
     for (int y = 0; y < output; y++) {
         for (int x = 0; x < input; x++) {
             initialWeigths[y][x] = randomFloat(minWeight, maxWeight);
@@ -42,26 +42,29 @@ Tensor2D* DenseLayer::forward(Tensor2D* data) {
     output->add(this->bias);
 
     // TODO: Remove me or wrap with DEBUG flag.
+    /*
+    printf("\n=== Layer %d ===\n", this);
     printf("Input Data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
     printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
     printf("Bias = X: %d Y: %d\n", this->bias->sizeX, this->bias->sizeY);
     printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
-
+    */
     return output;
 }
 
 Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
-    Tensor2D* deltaWeights = this->inputData->transposeAndMultiply(gradients);
-    Tensor2D* deltaBias = gradients->meanX();
+    this->deltaWeights = this->inputData->transposeAndMultiply(gradients);
+    this->deltaBias = gradients->meanX();
     Tensor2D* output = gradients->multiplyByTransposition(this->weights);
 
+    // TODO: Remove me or wrap with DEBUG flag.
+    printf("\n=== Layer %d ===\n", this);
     printf("Input data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
     printf("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
     printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    printf("Delta Weights = X: %d Y: %d\n", deltaWeights->sizeX, deltaWeights->sizeY);
+    printf("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->sizeX, this->deltaWeights->sizeY);
     printf("Bias = X: %d Y: %d\n", this->bias->sizeX, this->bias->sizeY);
-    printf("Delta Bias = X: %d Y: %d\n", deltaBias->sizeX, deltaBias->sizeY);
+    printf("Delta Bias (%d) = X: %d Y: %d\n", this->deltaBias, this->deltaBias->sizeX, this->deltaBias->sizeY);
     printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
-
     return output;
 }

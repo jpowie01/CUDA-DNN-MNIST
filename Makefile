@@ -1,9 +1,11 @@
-SOURCE_DIR=src
-DATA_DIR=data
-BUILD_DIR=build
-EXEC_FILE=CUDA-DNN-MNIST
+SOURCE_DIR = src
+DATA_DIR = data
+BUILD_DIR = build
+EXEC_FILE = CUDA-DNN-MNIST
 
-download:
+SOURCE_FILES := $(shell find $(SOURCEDIR) -name '*.cu')
+
+dataset:
 	mkdir -p ${DATA_DIR}
 	curl -o ${DATA_DIR}/train-images.gz http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz 
 	curl -o ${DATA_DIR}/train-labels.gz http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz 
@@ -12,7 +14,7 @@ download:
 
 build: FORCE
 	mkdir -p ${BUILD_DIR}
-	nvcc ${SOURCE_DIR}/*.cu -o ${BUILD_DIR}/${EXEC_FILE}
+	nvcc ${SOURCE_FILES} -o ${BUILD_DIR}/${EXEC_FILE}
 
 run:
 	./${BUILD_DIR}/${EXEC_FILE}
