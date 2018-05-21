@@ -17,6 +17,65 @@ int main() {
     srand(123123123);
 
     // Prepare some example input data - for now it is just random noise
+    float** rawExampleData = new float*[1];
+    *rawExampleData = new float[1*4];
+    rawExampleData[0][0] = -0.7;
+    rawExampleData[0][1] =  0.7;
+    rawExampleData[0][2] = -0.1;
+    rawExampleData[0][3] =  0.2;
+    Tensor2D* exampleData = new Tensor2D(4, 1, rawExampleData);
+
+    // Prepare some example labels for above input data - for now it is just random noise
+    float** rawExampleLabels = new float*[1];
+    *rawExampleLabels = new float[1*4];
+    rawExampleLabels[0][0] = 0;
+    rawExampleLabels[0][1] = 0;
+    rawExampleLabels[0][2] = 1;
+    rawExampleLabels[0][3] = 0;
+    Tensor2D* labels = new Tensor2D(4, 1, rawExampleLabels);
+
+    // Prepare optimizer and loss function
+    SGDOptimizer* optimizer = new SGDOptimizer(0.1);
+    CrossEntropyLoss* loss = new CrossEntropyLoss();
+
+    // Prepare model
+    SequentialModel* model = new SequentialModel(optimizer, loss);
+    model->addLayer(new DenseLayer(4, 4));
+    model->addLayer(new ReLuLayer(4));
+    model->addLayer(new DenseLayer(4, 4));
+    model->addLayer(new ReLuLayer(4));
+    model->addLayer(new DenseLayer(4, 4));
+
+    // Run some epochs
+    int epochs = 50000;  // TODO: Put it somewhere else to simplify experiments!
+    for (int epoch = 0; epoch < epochs; epoch++) {
+        // Forward pass
+        Tensor2D* output = model->forward(exampleData);
+
+        // Output for this example
+        /*
+        printf("\nClassification:\n");
+        output->debugPrint();
+
+        // Output for this example
+        printf("\nLabels:\n");
+        labels->debugPrint();
+        */
+
+        // Print error
+        printf("Epoch: %d\tError: %.5f\n", epoch, loss->getLoss(output, labels));
+
+        // Backward pass
+        model->backward(output, labels);
+    }
+
+
+
+
+
+
+/*
+    // Prepare some example input data - for now it is just random noise
     float** rawExampleData = new float*[16];
     *rawExampleData = new float[16*28*28];
     for (int i = 1; i < 16; i++) rawExampleData[i] = rawExampleData[i-1] + 28*28;
@@ -94,6 +153,7 @@ int main() {
         }
         printf("\n");
     }
+*/
 
     // TODO: Clean memory and exit
     /*

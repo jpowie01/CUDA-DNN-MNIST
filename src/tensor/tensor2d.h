@@ -2,6 +2,8 @@
 #ifndef TENSOR2D_H
 #define TENSOR2D_H
 
+#include <stdio.h>
+
 class Tensor2D {
 public:
     // TODO: Make me private!
@@ -23,6 +25,8 @@ public:
     Tensor2D* multiplyByTransposition(Tensor2D* tensor);
     Tensor2D* transposeAndMultiply(Tensor2D* tensor);
     Tensor2D* meanX();
+
+    void debugPrint();
 };
 
 #endif  /* !TENSOR2D_H */

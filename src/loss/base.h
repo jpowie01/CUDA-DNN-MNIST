@@ -10,6 +10,7 @@
 class LossFunction {
 public:
     virtual Tensor2D* calculate(Tensor2D* output, Tensor2D* labels) = 0;
+    virtual float getLoss(Tensor2D* networkOutput, Tensor2D* labels) = 0;
 };
 
 #endif  /* !BASE_LOSS_H */

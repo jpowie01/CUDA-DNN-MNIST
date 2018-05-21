@@ -58,6 +58,7 @@ Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
     Tensor2D* output = gradients->multiplyByTransposition(this->weights);
 
     // TODO: Remove me or wrap with DEBUG flag.
+    /*
     printf("\n=== Layer %d ===\n", this);
     printf("Input data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
     printf("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
@@ -66,5 +67,6 @@ Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
     printf("Bias = X: %d Y: %d\n", this->bias->sizeX, this->bias->sizeY);
     printf("Delta Bias (%d) = X: %d Y: %d\n", this->deltaBias, this->deltaBias->sizeX, this->deltaBias->sizeY);
     printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
+    */
     return output;
 }

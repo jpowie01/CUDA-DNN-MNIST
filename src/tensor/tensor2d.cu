@@ -183,3 +183,15 @@ Tensor2D* Tensor2D::meanX() {
 
     return new Tensor2D(this->sizeX, 1, output);
 }
+
+void Tensor2D::debugPrint() {
+    // Output for this example
+    float** values = this->fetchDataFromDevice();
+    for (int y = 0; y < this->sizeY; y++) {
+        for (int x = 0; x < this->sizeX; x++) {
+            printf("%.5f; ", values[y][x]);
+        }
+        printf("\n");
+    }
+    // TODO: Potential memory leak above...
+}

@@ -1,37 +1,46 @@
 #include "crossentropy.h"
 
 __global__
-void kSoftMaxCrossEntropy(float *a, int aX, int aY, float* labels, float* b) {
+void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
-    if (row < aY) {
-        /*
+    if (row < oY) {
         // Calculate sum of exponents for whole column
         float sum = 0.0;
-        for (int i = 0; i < aX; i++) {
-            sum += exp(a[row*aX + i]);
+        for (int i = 0; i < oX; i++) {
+            sum += exp(output[row*oX + i]);
         }
         if (abs(sum) < 0.0000001) {
             sum = 0.0000001;
         }
-        */
 
-        for (int i = 0; i < aX; i++) {
-            /*
+        for (int i = 0; i < oX; i++) {
             // Softmax = exp(value) / sum(exp(allValues))
-            b[row*aX + i] = exp(a[row*aX + i]) / sum;
-            */
-
             // Subtract truth (which is one hot)
-            b[row*aX + i] = a[row*aX + i] - labels[row*aX + i];
-
-            // Normalize
-            //b[row*aX + i] /= aX;
+            y[row*oX + i] = (exp(output[row*oX + i]) / sum) - labels[row*oX + i];
         }
     }
 }
 
 CrossEntropyLoss::CrossEntropyLoss() {
     // TODO: ...
+}
+
+float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
+    float** output = networkOutput->fetchDataFromDevice();  // TODO: Potential memory leak...
+    float** target = labels->fetchDataFromDevice();  // TODO: Potential memory leak...
+
+    float error = 0.0;
+    float sum = 0.0;
+    for (int x = 0; x < networkOutput->sizeX; x++) {
+        sum += exp(output[0][x]);
+    }
+    if (abs(sum) < 0.0000001) {
+        sum = 0.0000001;
+    }
+    for (int x = 0; x < networkOutput->sizeX; x++) {
+        error -= target[0][x] * log(exp(output[0][x]) / sum);  // TODO: Iterate over batch
+    }
+    return error;
 }
 
 Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels) {
