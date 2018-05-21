@@ -21,26 +21,28 @@ void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y
     }
 }
 
-CrossEntropyLoss::CrossEntropyLoss() {
-    // TODO: ...
-}
+CrossEntropyLoss::CrossEntropyLoss() {}
 
 float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
     float** output = networkOutput->fetchDataFromDevice();  // TODO: Potential memory leak...
     float** target = labels->fetchDataFromDevice();  // TODO: Potential memory leak...
+    float totalSumOfErrors = 0.0;
 
-    float error = 0.0;
-    float sum = 0.0;
-    for (int x = 0; x < networkOutput->sizeX; x++) {
-        sum += exp(output[0][x]);
+    for (int y = 0; y < networkOutput->sizeY; y++) {
+        float error = 0.0;
+        float sum = 0.0;
+        for (int x = 0; x < networkOutput->sizeX; x++) {
+            sum += exp(output[y][x]);
+        }
+        if (abs(sum) < 1e-10) {
+            sum = 1e-10;
+        }
+        for (int x = 0; x < networkOutput->sizeX; x++) {
+            error -= target[y][x] * log(exp(output[y][x]) / sum);
+        }
+        totalSumOfErrors += error;
     }
-    if (abs(sum) < 0.0000001) {
-        sum = 0.0000001;
-    }
-    for (int x = 0; x < networkOutput->sizeX; x++) {
-        error -= target[0][x] * log(exp(output[0][x]) / sum);  // TODO: Iterate over batch
-    }
-    return error;
+    return totalSumOfErrors / networkOutput->sizeY;
 }
 
 Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels) {

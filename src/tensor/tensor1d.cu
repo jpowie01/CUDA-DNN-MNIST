@@ -26,8 +26,12 @@ void kScale(float *a, float factor, int N) {
 
 Tensor1D::Tensor1D(int size, float* hostData) {
     this->size = size;
-    cudaMalloc((void **)&(this->devData), this->size*sizeof(float));
-    cudaMemcpy(devData, hostData, this->size*sizeof(float), cudaMemcpyHostToDevice);
+    if (size) {
+        cudaMalloc((void **)&(this->devData), this->size*sizeof(float));
+        cudaMemcpy(this->devData, hostData, this->size*sizeof(float), cudaMemcpyHostToDevice);
+    } else {
+        this->devData = NULL;
+    }
 }
 
 Tensor1D::~Tensor1D() {
@@ -40,6 +44,7 @@ float* Tensor1D::getDeviceData() {
 
 float* Tensor1D::fetchDataFromDevice() {
     float* hostData = (float*)malloc(this->size*sizeof(float));
+    cudaDeviceSynchronize();
     cudaMemcpy(hostData, this->devData, this->size*sizeof(float), cudaMemcpyDeviceToHost);
     return hostData;
 }

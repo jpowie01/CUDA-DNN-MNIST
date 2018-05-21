@@ -2,6 +2,8 @@
 #ifndef TENSOR1D_H
 #define TENSOR1D_H
 
+#include <cstdio>
+
 class Tensor1D {
 public:
     // TODO: Make me private!

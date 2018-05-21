@@ -1,6 +1,5 @@
 #include "dense.h"
 
-
 DenseLayer::DenseLayer(int input, int output) {
     this->input = input;
     this->output = output;
@@ -42,7 +41,7 @@ Tensor2D* DenseLayer::forward(Tensor2D* data) {
     printf("\n=== Layer %d ===\n", this);
     printf("Input Data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
     printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    printf("Bias = X: %d Y: %d\n", this->bias->sizeX, this->bias->sizeY);
+    printf("Bias = X: %d\n", this->bias->size);
     printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
     */
     return output;
@@ -60,8 +59,8 @@ Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
     printf("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
     printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
     printf("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->sizeX, this->deltaWeights->sizeY);
-    printf("Bias = X: %d Y: %d\n", this->bias->sizeX, this->bias->sizeY);
-    printf("Delta Bias (%d) = X: %d Y: %d\n", this->deltaBias, this->deltaBias->sizeX, this->deltaBias->sizeY);
+    printf("Bias = X: %d\n", this->bias->size);
+    printf("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->size);
     printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
     */
     return output;

@@ -14,7 +14,7 @@ dataset:
 
 build: FORCE
 	mkdir -p ${BUILD_DIR}
-	nvcc ${SOURCE_FILES} -o ${BUILD_DIR}/${EXEC_FILE}
+	nvcc ${SOURCE_FILES} -lineinfo -o ${BUILD_DIR}/${EXEC_FILE}
 
 run:
 	./${BUILD_DIR}/${EXEC_FILE}

@@ -6,7 +6,7 @@ SequentialModel::SequentialModel(Optimizer* optimizer, LossFunction* lossFunctio
 }
 
 void SequentialModel::addLayer(Layer* layer) {
-    printf("Adding Layer to the model: %d\n", layer);
+    //printf("Adding Layer to the model: %d\n", layer);
     this->layers.push_back(layer);
 }
 
