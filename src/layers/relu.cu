@@ -31,9 +31,9 @@ ReLuLayer::ReLuLayer(int inputOutput) {
 
     // TODO: Remove this by making ReLu Layer an Activation Layer
     this->weights = new Tensor2D(0, 0, (float*)NULL);
-    this->bias = new Tensor2D(0, 0, (float*)NULL);
+    this->bias = new Tensor1D(0, (float*)NULL);
     this->deltaWeights = new Tensor2D(0, 0, (float*)NULL);
-    this->deltaBias = new Tensor2D(0, 0, (float*)NULL);
+    this->deltaBias = new Tensor1D(0, (float*)NULL);
 }
 
 Tensor2D* ReLuLayer::forward(Tensor2D* data) {

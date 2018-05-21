@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <cmath>
 
+#include "../tensor/tensor1d.h"
 #include "../tensor/tensor2d.h"
 #include "../utils.h"
 #include "base.h"

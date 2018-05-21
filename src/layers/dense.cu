@@ -21,17 +21,13 @@ DenseLayer::DenseLayer(int input, int output) {
     this->weights = new Tensor2D(output, input, initialWeigths);
 
     // Prepare place for initial bias on CPU
-    float** initialBias = new float*[16];  // TODO: Take it as a batch size
-    *initialBias = new float[16 * output];
-    for (int i = 1; i < 16; i++) initialBias[i] = initialBias[i-1] + output;
+    float* initialBias = new float[output];
     
     // Fill weights with some float numbers
-    for (int batch = 0; batch < 16; batch++) {  // TODO: Take it as a batch size
-        for (int x = 0; x < output; x++) {
-            initialBias[batch][x] = 0;
-        }
+    for (int x = 0; x < output; x++) {
+        initialBias[x] = 0;
     }
-    this->bias = new Tensor2D(output, 16, initialBias);  // TODO: Take it as a batch size
+    this->bias = new Tensor1D(output, initialBias);
 }
 
 Tensor2D* DenseLayer::forward(Tensor2D* data) {

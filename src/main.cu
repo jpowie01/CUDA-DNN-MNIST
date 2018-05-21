@@ -47,7 +47,7 @@ int main() {
     model->addLayer(new DenseLayer(4, 4));
 
     // Run some epochs
-    int epochs = 50000;  // TODO: Put it somewhere else to simplify experiments!
+    int epochs = 500;  // TODO: Put it somewhere else to simplify experiments!
     for (int epoch = 0; epoch < epochs; epoch++) {
         // Forward pass
         Tensor2D* output = model->forward(exampleData);

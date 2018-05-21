@@ -1,7 +1,16 @@
 #include "tensor2d.h"
 
 __global__
-void kAdd(float *a, float *b, int sizeX, int sizeY) {
+void kAdd1D(float *a, float *b, int sizeX, int sizeY) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x < sizeX && y < sizeY) {
+        a[y*sizeY + x] += b[x];
+    }
+}
+
+__global__
+void kAdd2D(float *a, float *b, int sizeX, int sizeY) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x < sizeX && y < sizeY) {
@@ -120,7 +129,14 @@ void Tensor2D::add(Tensor2D* tensor) {
     dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kAdd<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
+    kAdd2D<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
+}
+
+void Tensor2D::add(Tensor1D* tensor) {
+    dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
+                   (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
+    kAdd1D<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
 }
 
 void Tensor2D::subtract(Tensor2D* tensor) {
@@ -173,7 +189,7 @@ Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor) {
     return new Tensor2D(tensor->sizeX, this->sizeX, output);
 }
 
-Tensor2D* Tensor2D::meanX() {
+Tensor1D* Tensor2D::meanX() {
     float* output;
     cudaMalloc((void **)&(output), this->sizeX*sizeof(float));
 
@@ -181,7 +197,7 @@ Tensor2D* Tensor2D::meanX() {
     int numBlocks = (this->sizeX + threadsPerBlock)/threadsPerBlock;
     kMeanX<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, output);
 
-    return new Tensor2D(this->sizeX, 1, output);
+    return new Tensor1D(this->sizeX, output);
 }
 
 void Tensor2D::debugPrint() {
