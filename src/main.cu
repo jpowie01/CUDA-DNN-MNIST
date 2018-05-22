@@ -25,7 +25,6 @@ int main() {
             rawExampleData[batch][i] = randomFloat(-1.0, 1.0);
         }
     }
-    Tensor2D* exampleData = new Tensor2D(28*28, 16, rawExampleData);
 
     // Prepare some example labels for above input data - for now it is just random noise
     float** rawExampleLabels = new float*[16];
@@ -38,39 +37,38 @@ int main() {
         }
         rawExampleLabels[batch][randomLabel] = 1;
     }
-    Tensor2D* labels = new Tensor2D(10, 16, rawExampleLabels);
 
     // Prepare optimizer and loss function
-    SGDOptimizer* optimizer = new SGDOptimizer(0.001);
+    SGDOptimizer* optimizer = new SGDOptimizer(0.000005);
     CrossEntropyLoss* loss = new CrossEntropyLoss();
 
     // Prepare model
     SequentialModel* model = new SequentialModel(optimizer, loss);
-    model->addLayer(new DenseLayer(28*28, 300));
-    model->addLayer(new ReLuLayer(300));
-    model->addLayer(new DenseLayer(300, 300));
+    model->addLayer(new DenseLayer(28*28, 500));
+    model->addLayer(new ReLuLayer(500));
+    model->addLayer(new DenseLayer(500, 300));
     model->addLayer(new ReLuLayer(300));
     model->addLayer(new DenseLayer(300, 10));
 
     // Run some epochs
-    int epochs = 3000;  // TODO: Put it somewhere else to simplify experiments!
+    int epochs = 20000;  // TODO: Put it somewhere else to simplify experiments!
     for (int epoch = 0; epoch < epochs; epoch++) {
+        // Fetch batch from dataset
+        Tensor2D* exampleData = new Tensor2D(28*28, 16, rawExampleData);
+        Tensor2D* labels = new Tensor2D(10, 16, rawExampleLabels);
+
         // Forward pass
         Tensor2D* output = model->forward(exampleData);
 
-        // Output for this example
-        // printf("\nClassification:\n");
-        // output->debugPrint();
-
-        // Output for this example
-        // printf("\nLabels:\n");
-        // labels->debugPrint();
-
         // Print error
-        printf("Epoch: %d\tError: %.5f\n", epoch, loss->getLoss(output, labels));
+        printf("Epoch: %d\tError: %.5f\tAccuracy: %.5f%%\n", epoch, loss->getLoss(output, labels), loss->getAccuracy(output, labels));
 
         // Backward pass
         model->backward(output, labels);
+
+        // Clean data for this batch
+        delete exampleData;
+        delete labels;
     }
 
     // TODO: Clean memory and exit

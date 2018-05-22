@@ -27,6 +27,7 @@ void kScale(float *a, float factor, int N) {
 Tensor1D::Tensor1D(int size, float* hostData) {
     this->size = size;
     if (size) {
+        //printf("Created by allocation %d\n", this->size);
         cudaMalloc((void **)&(this->devData), this->size*sizeof(float));
         cudaMemcpy(this->devData, hostData, this->size*sizeof(float), cudaMemcpyHostToDevice);
     } else {
@@ -35,6 +36,7 @@ Tensor1D::Tensor1D(int size, float* hostData) {
 }
 
 Tensor1D::~Tensor1D() {
+    //printf("Released %d\n", this->size);
     cudaFree(this->devData);
 }
 

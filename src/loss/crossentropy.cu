@@ -24,8 +24,8 @@ void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y
 CrossEntropyLoss::CrossEntropyLoss() {}
 
 float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
-    float** output = networkOutput->fetchDataFromDevice();  // TODO: Potential memory leak...
-    float** target = labels->fetchDataFromDevice();  // TODO: Potential memory leak...
+    float** output = networkOutput->fetchDataFromDevice();
+    float** target = labels->fetchDataFromDevice();
     float totalSumOfErrors = 0.0;
 
     for (int y = 0; y < networkOutput->sizeY; y++) {
@@ -42,7 +42,36 @@ float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
         }
         totalSumOfErrors += error;
     }
+
+    // Clean memory and return output
+    delete[] output;
+    delete[] target;
     return totalSumOfErrors / networkOutput->sizeY;
+}
+
+float CrossEntropyLoss::getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) {
+    float** output = networkOutput->fetchDataFromDevice();
+    float** target = labels->fetchDataFromDevice();
+    float totalMatched = 0.0;
+
+    for (int y = 0; y < networkOutput->sizeY; y++) {
+        int maxIdx = 0;
+        float maxValue = output[y][0];
+        for (int x = 1; x < networkOutput->sizeX; x++) {
+            if (output[y][x] > maxValue) {
+                maxIdx = x;
+                maxValue = output[y][x];
+            }
+        }
+        if (target[y][maxIdx] > 1.0 - 1.0e-10) {
+            totalMatched += 1;
+        }
+    }
+
+    // Clean memory and return output
+    delete[] output;
+    delete[] target;
+    return 100.0 * totalMatched / networkOutput->sizeY;
 }
 
 Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels) {

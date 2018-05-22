@@ -17,6 +17,7 @@ public:
 
     Tensor2D* calculate(Tensor2D* output, Tensor2D* labels);
     float getLoss(Tensor2D* networkOutput, Tensor2D* labels);
+    float getAccuracy(Tensor2D* networkOutput, Tensor2D* labels);
 };
 
 #endif  /* !CROSSENTROPY_H */

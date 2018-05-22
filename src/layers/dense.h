@@ -22,7 +22,7 @@ public:
     DenseLayer(int input, int output);
 
     Tensor2D* forward(Tensor2D* data);
-    Tensor2D* backward(Tensor2D* gradients);
+    Tensor2D* backward(Tensor2D* gradients, bool firstLayer = false);
 };
 
 #endif  /* !DENSE_H */

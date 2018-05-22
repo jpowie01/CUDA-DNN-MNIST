@@ -18,6 +18,7 @@ DenseLayer::DenseLayer(int input, int output) {
         }
     }
     this->weights = new Tensor2D(output, input, initialWeigths);
+    this->deltaWeights = NULL;
 
     // Prepare place for initial bias on CPU
     float* initialBias = new float[output];
@@ -27,41 +28,54 @@ DenseLayer::DenseLayer(int input, int output) {
         initialBias[x] = 0;
     }
     this->bias = new Tensor1D(output, initialBias);
+    this->deltaBias = NULL;
+
+    // Clean memory
+    delete[] initialWeigths;
+    delete[] initialBias;
 }
 
 Tensor2D* DenseLayer::forward(Tensor2D* data) {
     // Save this data - will be needed for backpropagation
     this->inputData = data;
 
+    // Calculate on GPU: Y = x * W + b
     Tensor2D* output = this->inputData->multiply(this->weights);
     output->add(this->bias);
 
-    // TODO: Remove me or wrap with DEBUG flag.
-    /*
-    printf("\n=== Layer %d ===\n", this);
-    printf("Input Data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
-    printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    printf("Bias = X: %d\n", this->bias->size);
-    printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
-    */
+    DEBUG_PRINT("=== Layer %d ===\n", this);
+    DEBUG_PRINT("Input Data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
+    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
+    DEBUG_PRINT("Bias = X: %d\n", this->bias->size);
+    DEBUG_PRINT("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
     return output;
 }
 
-Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
+Tensor2D* DenseLayer::backward(Tensor2D* gradients, bool firstLayer) {
+    if (this->deltaWeights) {
+        delete this->deltaWeights;
+    }
+    if (this->deltaBias) {
+        delete this->deltaBias;
+    }
     this->deltaWeights = this->inputData->transposeAndMultiply(gradients);
     this->deltaBias = gradients->meanX();
-    Tensor2D* output = gradients->multiplyByTransposition(this->weights);
 
-    // TODO: Remove me or wrap with DEBUG flag.
-    /*
-    printf("\n=== Layer %d ===\n", this);
-    printf("Input data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
-    printf("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
-    printf("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    printf("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->sizeX, this->deltaWeights->sizeY);
-    printf("Bias = X: %d\n", this->bias->size);
-    printf("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->size);
-    printf("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
-    */
+    DEBUG_PRINT("\n=== Layer %d ===\n", this);
+    DEBUG_PRINT("Input data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
+    DEBUG_PRINT("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
+    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
+    DEBUG_PRINT("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->sizeX, this->deltaWeights->sizeY);
+    DEBUG_PRINT("Bias = X: %d\n", this->bias->size);
+    DEBUG_PRINT("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->size);
+
+    if (firstLayer) {
+        return NULL;
+    }
+
+    Tensor2D* output = gradients->multiplyByTransposition(this->weights);
+    DEBUG_PRINT("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
+
+    delete this->inputData;
     return output;
 }

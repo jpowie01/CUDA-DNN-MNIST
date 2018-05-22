@@ -21,7 +21,7 @@ public:
     ReLuLayer(int inputOutput);
 
     Tensor2D* forward(Tensor2D* data);
-    Tensor2D* backward(Tensor2D* gradients);
+    Tensor2D* backward(Tensor2D* gradients, bool firstLayer = false);
 };
 
 #endif  /* !RELU_H */

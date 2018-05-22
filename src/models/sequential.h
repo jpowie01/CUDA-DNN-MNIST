@@ -10,6 +10,7 @@
 #include "../optimizers/base.h"
 #include "../loss/base.h"
 #include "../tensor/tensor2d.h"
+#include "../utils.h"
 
 
 class SequentialModel {
