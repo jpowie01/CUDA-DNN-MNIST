@@ -21,25 +21,22 @@ void kReLuBackward(float *a, int sizeX, int sizeY, float* b) {
         if (a[y*sizeX + x] < 0.0) {
             b[y*sizeX + x] = 0;
         } else {
-            b[y*sizeX + x] = a[y*sizeX + x];  // TODO: Shouldn't it be 1?
+            b[y*sizeX + x] = a[y*sizeX + x];
         }
     }
 }
 
 ReLuLayer::ReLuLayer(int inputOutput) {
     this->input = this->output = inputOutput;
-
-    // TODO: Remove this by making ReLu Layer an Activation Layer
-    this->weights = new Tensor2D(0, 0, (float*)NULL);
-    this->bias = new Tensor1D(0, (float*)NULL);
-    this->deltaWeights = new Tensor2D(0, 0, (float*)NULL);
-    this->deltaBias = new Tensor1D(0, (float*)NULL);
+    this->weights = NULL;
+    this->bias = NULL;
+    this->deltaWeights = NULL;
+    this->deltaBias = NULL;
 }
 
 Tensor2D* ReLuLayer::forward(Tensor2D* data) {
     this->inputData = data;
 
-    // TODO: Check if I really need to create new Tensor here
     float* output;
     cudaMalloc((void **)&(output), data->sizeX*data->sizeY*sizeof(float));
 

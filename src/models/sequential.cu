@@ -13,7 +13,7 @@ void SequentialModel::addLayer(Layer* layer) {
 Tensor2D* SequentialModel::forward(Tensor2D* input) {
     Tensor2D* values = input;
     for (std::vector<Layer*>::iterator layer = layers.begin(); layer != layers.end(); layer++) {
-        values = (*layer)->forward(values);  // TODO: Possible memory leak!
+        values = (*layer)->forward(values);
         #if defined(DEBUG) && DEBUG >= 2
         DEBUG_PRINT("Forward pass for Layer %d:\n", (*layer));
         values->debugPrint();
@@ -35,17 +35,13 @@ void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
     for (std::vector<Layer*>::reverse_iterator layer = layers.rbegin(); layer != layers.rend(); layer++) {
         if (layer+1 == layers.rend()) {
             values = (*layer)->backward(values, true);
-            #if defined(DEBUG) && DEBUG >= 2
-            DEBUG_PRINT("\nBackward pass for Layer %d:\n", (*layer));
-            values->debugPrint();
-            #endif
         } else {
             values = (*layer)->backward(values);
-            #if defined(DEBUG) && DEBUG >= 2
-            DEBUG_PRINT("\nBackward pass for Layer %d:\n", (*layer));
-            values->debugPrint();
-            #endif
         }
+        #if defined(DEBUG) && DEBUG >= 2
+        DEBUG_PRINT("\nBackward pass for Layer %d:\n", (*layer));
+        values->debugPrint();
+        #endif
     }
 
     // Updates all layers with optimizer

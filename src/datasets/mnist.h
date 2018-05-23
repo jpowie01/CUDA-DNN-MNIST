@@ -5,18 +5,26 @@
 #include <stdio.h>
 
 #include "../tensor/tensor2d.h"
+#include "../utils.h"
+
+
+enum DataSetType {
+    TRAIN,
+    TEST
+};
 
 
 class MNISTDataSet {
 private:
-    unsigned char* bufferImages;
-    unsigned char* bufferLabels;
+    float** images;
+    float** labels;
     int size;
 
 public:
-    MNISTDataSet();
+    MNISTDataSet(DataSetType type = TRAIN);
     
     int getSize();
+    void shuffle();
     Tensor2D* getBatchOfImages(int index, int size);
     Tensor2D* getBatchOfLabels(int index, int size);
 };

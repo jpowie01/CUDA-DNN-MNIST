@@ -6,18 +6,18 @@ SGDOptimizer::SGDOptimizer(float learningRate) {
 
 void SGDOptimizer::optimize(Layer* layer) {
     // Scale deltas with learning rate
-    if (layer->deltaWeights->getDeviceData()) {
+    if (layer->deltaWeights) {
         layer->deltaWeights->scale(this->learningRate);
     }
-    if (layer->deltaBias->getDeviceData()) {
+    if (layer->deltaBias) {
         layer->deltaBias->scale(this->learningRate);
     }
 
     // Update weights by subtracting deltas
-    if (layer->weights->getDeviceData()) {
+    if (layer->weights) {
         layer->weights->subtract(layer->deltaWeights);
     }
-    if (layer->bias->getDeviceData()) {
+    if (layer->bias) {
         layer->bias->subtract(layer->deltaBias);
     }
 }

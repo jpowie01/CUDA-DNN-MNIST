@@ -1,5 +1,7 @@
 #include "crossentropy.h"
 
+#define VERY_SMALL_NUMBER 1e-10
+
 __global__
 void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
@@ -9,8 +11,8 @@ void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y
         for (int i = 0; i < oX; i++) {
             sum += exp(output[row*oX + i]);
         }
-        if (abs(sum) < 0.0000001) {
-            sum = 0.0000001;
+        if (abs(sum) < VERY_SMALL_NUMBER) {
+            sum = VERY_SMALL_NUMBER;
         }
 
         for (int i = 0; i < oX; i++) {
@@ -24,6 +26,7 @@ void kSoftMaxCrossEntropy(float *output, int oX, int oY, float* labels, float* y
 CrossEntropyLoss::CrossEntropyLoss() {}
 
 float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
+    // TODO: Do this on GPU!
     float** output = networkOutput->fetchDataFromDevice();
     float** target = labels->fetchDataFromDevice();
     float totalSumOfErrors = 0.0;
@@ -34,11 +37,11 @@ float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
         for (int x = 0; x < networkOutput->sizeX; x++) {
             sum += exp(output[y][x]);
         }
-        if (abs(sum) < 1e-10) {
-            sum = 1e-10;
+        if (abs(sum) < VERY_SMALL_NUMBER) {
+            sum = VERY_SMALL_NUMBER;
         }
         for (int x = 0; x < networkOutput->sizeX; x++) {
-            error -= target[y][x] * log(exp(output[y][x]) / sum) + (1 - target[y][x]) * log(exp(output[y][x]) / sum);
+            error -= target[y][x] * log(exp(output[y][x]) / sum) + (1 - target[y][x]) * log(1 - exp(output[y][x]) / sum);
         }
         totalSumOfErrors += error;
     }
@@ -63,7 +66,7 @@ float CrossEntropyLoss::getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) {
                 maxValue = output[y][x];
             }
         }
-        if (target[y][maxIdx] > 1.0 - 1.0e-10) {
+        if (target[y][maxIdx] > 1.0 - VERY_SMALL_NUMBER) {
             totalMatched += 1;
         }
     }
