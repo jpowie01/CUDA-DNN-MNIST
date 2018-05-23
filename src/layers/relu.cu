@@ -54,18 +54,15 @@ Tensor2D* ReLuLayer::forward(Tensor2D* data) {
 Tensor2D* ReLuLayer::backward(Tensor2D* gradients, bool firstLayer) {
     // Shouldn't happen but let's have a case for this
     if (firstLayer) {
+        delete gradients;
         return NULL;
     }
-
-    // TODO: Check if I really need to create new Tensor here
-    float* output;
-    cudaMalloc((void **)&(output), gradients->sizeX*gradients->sizeY*sizeof(float));
 
     dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((gradients->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (gradients->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kReLuBackward<<<numBlocks, threadsPerBlock>>>(gradients->getDeviceData(), gradients->sizeX, gradients->sizeY, output);
+    kReLuBackward<<<numBlocks, threadsPerBlock>>>(gradients->getDeviceData(), gradients->sizeX, gradients->sizeY, gradients->getDeviceData());
 
     delete this->inputData;
-    return new Tensor2D(gradients->sizeX, gradients->sizeY, output);
+    return new Tensor2D(gradients->sizeX, gradients->sizeY, gradients->getDeviceData());
 }

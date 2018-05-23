@@ -38,7 +38,7 @@ float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
             sum = 1e-10;
         }
         for (int x = 0; x < networkOutput->sizeX; x++) {
-            error -= target[y][x] * log(exp(output[y][x]) / sum);
+            error -= target[y][x] * log(exp(output[y][x]) / sum) + (1 - target[y][x]) * log(exp(output[y][x]) / sum);
         }
         totalSumOfErrors += error;
     }

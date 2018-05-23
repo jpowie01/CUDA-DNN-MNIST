@@ -70,12 +70,14 @@ Tensor2D* DenseLayer::backward(Tensor2D* gradients, bool firstLayer) {
     DEBUG_PRINT("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->size);
 
     if (firstLayer) {
+        delete gradients;
         return NULL;
     }
 
     Tensor2D* output = gradients->multiplyByTransposition(this->weights);
     DEBUG_PRINT("Output = X: %d Y: %d\n", output->sizeX, output->sizeY);
 
+    delete gradients;
     delete this->inputData;
     return output;
 }

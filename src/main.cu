@@ -7,39 +7,19 @@
 #include "optimizers/sgd.h"
 #include "loss/crossentropy.h"
 #include "models/sequential.h"
+#include "datasets/mnist.h"
 #include "utils.h"
 
 
 int main() {
     // Always initialize seed to some random value
-    // TODO: Maybe it is worth to fix it for experiments?
     //srand(static_cast<unsigned>(time(0)));
     srand(123123123);
 
-    // Prepare some example input data - for now it is just random noise
-    float** rawExampleData = new float*[16];
-    *rawExampleData = new float[16*28*28];
-    for (int i = 1; i < 16; i++) rawExampleData[i] = rawExampleData[i-1] + 28*28;
-    for (int batch = 0; batch < 16; batch++) {
-        for (int i = 0; i < 28*28; i++) {
-            rawExampleData[batch][i] = randomFloat(-1.0, 1.0);
-        }
-    }
-
-    // Prepare some example labels for above input data - for now it is just random noise
-    float** rawExampleLabels = new float*[16];
-    *rawExampleLabels = new float[16*10];
-    for (int i = 1; i < 16; i++) rawExampleLabels[i] = rawExampleLabels[i-1] + 10;
-    for (int batch = 0; batch < 16; batch++) {
-        int randomLabel = randomInt(0, 9);
-        for (int i = 0; i < 10; i++) {
-            rawExampleLabels[batch][i] = 0;
-        }
-        rawExampleLabels[batch][randomLabel] = 1;
-    }
+    MNISTDataSet* dataset = new MNISTDataSet();
 
     // Prepare optimizer and loss function
-    SGDOptimizer* optimizer = new SGDOptimizer(0.000005);
+    SGDOptimizer* optimizer = new SGDOptimizer(0.000000001);
     CrossEntropyLoss* loss = new CrossEntropyLoss();
 
     // Prepare model
@@ -51,33 +31,26 @@ int main() {
     model->addLayer(new DenseLayer(300, 10));
 
     // Run some epochs
-    int epochs = 20000;  // TODO: Put it somewhere else to simplify experiments!
+    int epochs = 30;  // TODO: Put it somewhere else to simplify experiments!
     for (int epoch = 0; epoch < epochs; epoch++) {
-        // Fetch batch from dataset
-        Tensor2D* exampleData = new Tensor2D(28*28, 16, rawExampleData);
-        Tensor2D* labels = new Tensor2D(10, 16, rawExampleLabels);
+        for (int batch = 0; batch < dataset->getSize() / 16; batch++) {
+            // Fetch batch from dataset
+            Tensor2D* images = dataset->getBatchOfImages(batch, 16);
+            Tensor2D* labels = dataset->getBatchOfLabels(batch, 16);
 
-        // Forward pass
-        Tensor2D* output = model->forward(exampleData);
+            // Forward pass
+            Tensor2D* output = model->forward(images);
 
-        // Print error
-        printf("Epoch: %d\tError: %.5f\tAccuracy: %.5f%%\n", epoch, loss->getLoss(output, labels), loss->getAccuracy(output, labels));
+            // Print error
+            printf("Epoch: %d\tBatch: %d\tError: %8.5f\tAccuracy: %8.5f%%\n", epoch, batch, loss->getLoss(output, labels), loss->getAccuracy(output, labels));
 
-        // Backward pass
-        model->backward(output, labels);
+            // Backward pass
+            model->backward(output, labels);
 
-        // Clean data for this batch
-        delete exampleData;
-        delete labels;
+            // Clean data for this batch
+            delete images;
+            delete labels;
+        }
     }
-
-    // TODO: Clean memory and exit
-    /*
-    delete tensorA;
-    delete tensorB;
-    delete data;
-    delete b;
-    delete a;
-    */
     return 0;
 }
