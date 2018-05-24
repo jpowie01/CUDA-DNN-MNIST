@@ -76,6 +76,7 @@ float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
     dim3 numBlocks((networkOutput->sizeY + threadsPerBlock.x)/threadsPerBlock.x);
     kSoftMaxCrossEntropyLoss<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->sizeX, networkOutput->sizeY, labels->getDeviceData(), dError);
     cudaMemcpy(&error, dError, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaFree(dError);
     return error / networkOutput->sizeY;
 }
 
@@ -89,16 +90,13 @@ float CrossEntropyLoss::getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) {
     dim3 numBlocks((networkOutput->sizeY + threadsPerBlock.x)/threadsPerBlock.x);
     kSoftMaxCrossEntropyAccuracy<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->sizeX, networkOutput->sizeY, labels->getDeviceData(), dAccuracy);
     cudaMemcpy(&accuracy, dAccuracy, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaFree(dAccuracy);
     return 100.0 * accuracy / networkOutput->sizeY;
 }
 
-Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels) {
-    float* output;
-    cudaMalloc((void **)&(output), networkOutput->sizeX*networkOutput->sizeY*sizeof(float));
-
+Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels, Tensor2D* output) {
     dim3 threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((networkOutput->sizeY + threadsPerBlock.x)/threadsPerBlock.x);
-    kSoftMaxCrossEntropy<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->sizeX, networkOutput->sizeY, labels->getDeviceData(), output);
-
-    return new Tensor2D(networkOutput->sizeX, networkOutput->sizeY, output);
+    kSoftMaxCrossEntropy<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->sizeX, networkOutput->sizeY, labels->getDeviceData(), output->getDeviceData());
+    return output;
 }

@@ -19,6 +19,7 @@ private:
     LossFunction* lossFunction;
     std::vector<Layer*> layers;
 
+    Tensor2D* gradients;
 public:
     SequentialModel(Optimizer* optimizer, LossFunction* lossFunction);
 

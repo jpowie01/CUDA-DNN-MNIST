@@ -3,6 +3,7 @@
 SequentialModel::SequentialModel(Optimizer* optimizer, LossFunction* lossFunction) {
     this->optimizer = optimizer;
     this->lossFunction = lossFunction;
+    this->gradients = NULL;
 }
 
 void SequentialModel::addLayer(Layer* layer) {
@@ -24,7 +25,10 @@ Tensor2D* SequentialModel::forward(Tensor2D* input) {
 
 void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
     // Compute gradients with loss function
-    Tensor2D* gradients = this->lossFunction->calculate(output, labels);
+    if (!this->gradients) {
+        this->gradients = new Tensor2D(output->sizeX, output->sizeY);
+    }
+    this->lossFunction->calculate(output, labels, this->gradients);
     #if defined(DEBUG) && DEBUG >= 2
     DEBUG_PRINT("Backward pass gradients:\n");
     gradients->debugPrint();

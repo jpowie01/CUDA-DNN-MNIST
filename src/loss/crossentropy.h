@@ -15,7 +15,7 @@ private:
 public:
     CrossEntropyLoss();
 
-    Tensor2D* calculate(Tensor2D* output, Tensor2D* labels);
+    Tensor2D* calculate(Tensor2D* networkOutput, Tensor2D* labels, Tensor2D* output);
     float getLoss(Tensor2D* networkOutput, Tensor2D* labels);
     float getAccuracy(Tensor2D* networkOutput, Tensor2D* labels);
 };
