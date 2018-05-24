@@ -5,15 +5,16 @@
 #include <cstdio>
 
 class Tensor1D {
-public:
-    // TODO: Make me private!
-    int  size;
+private:
+    int size;
     float* devData;
 
+public:
     Tensor1D(int size);
     Tensor1D(int size, float* data);
     ~Tensor1D();
 
+    int getSize();
     float* getDeviceData();
     float* fetchDataFromDevice();
     

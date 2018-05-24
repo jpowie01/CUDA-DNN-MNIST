@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include "../tensor/tensor2d.h"
-#include "base.h"
+#include "lossfunction.h"
 
 
 class CrossEntropyLoss: public LossFunction {

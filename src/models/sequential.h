@@ -6,9 +6,9 @@
 #include <cmath>
 #include <vector>
 
-#include "../layers/base.h"
-#include "../optimizers/base.h"
-#include "../loss/base.h"
+#include "../layers/layer.h"
+#include "../optimizers/optimizer.h"
+#include "../loss/lossfunction.h"
 #include "../tensor/tensor2d.h"
 #include "../utils.h"
 
@@ -20,6 +20,7 @@ private:
     std::vector<Layer*> layers;
 
     Tensor2D* gradients;
+
 public:
     SequentialModel(Optimizer* optimizer, LossFunction* lossFunction);
 

@@ -108,7 +108,6 @@ Tensor2D::Tensor2D(int sizeX, int sizeY, float** hostData) {
     this->sizeX = sizeX;
     this->sizeY = sizeY;
     if (this->sizeX && this->sizeY) {
-        //printf("Created by allocation %dx%d\n", this->sizeX, this->sizeY);
         cudaMalloc((void **)&(this->devData), this->sizeX*this->sizeY*sizeof(float));
         cudaMemcpy(this->devData, *hostData, this->sizeX*this->sizeY*sizeof(float), cudaMemcpyHostToDevice);
     } else {
@@ -120,12 +119,19 @@ Tensor2D::Tensor2D(int sizeX, int sizeY, float* devData) {
     this->sizeX = sizeX;
     this->sizeY = sizeY;
     this->devData = devData;
-    //printf("Created by assigning %dx%d\n", this->sizeX, this->sizeY);
 }
 
 Tensor2D::~Tensor2D() {
-    //printf("Released %dx%d\n", this->sizeX, this->sizeY);
     cudaFree(this->devData);
+}
+
+int Tensor2D::getSize(Tensor2DAxis axis) {
+    if (axis == X) {
+        return this->sizeX;
+    } else if (axis == Y) {
+        return this->sizeY;
+    }
+    return -1;
 }
 
 float* Tensor2D::getDeviceData() {
@@ -144,8 +150,8 @@ float** Tensor2D::fetchDataFromDevice() {
 
 void Tensor2D::add(Tensor1D* tensor) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeX != tensor->size) {
-        printf("ERROR! Cannot add vector with size %d to matrix %dx%d.\n", tensor->size, this->sizeX, this->sizeY);
+    if (this->sizeX != tensor->getSize()) {
+        printf("ERROR! Cannot add vector with size %d to matrix %dx%d.\n", tensor->getSize(), this->sizeX, this->sizeY);
         exit(1);
     }
 
@@ -158,8 +164,8 @@ void Tensor2D::add(Tensor1D* tensor) {
 
 void Tensor2D::add(Tensor2D* tensor) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeX != tensor->sizeX || this->sizeY != tensor->sizeY) {
-        printf("ERROR! Cannot add matrix with size %dx%d to matrix %dx%d.\n", tensor->sizeX, tensor->sizeY, this->sizeX, this->sizeY);
+    if (this->sizeX != tensor->getSize(X) || this->sizeY != tensor->getSize(Y)) {
+        printf("ERROR! Cannot add matrix with size %dx%d to matrix %dx%d.\n", tensor->getSize(X), tensor->getSize(Y), this->sizeX, this->sizeY);
         exit(1);
     }
 
@@ -172,8 +178,8 @@ void Tensor2D::add(Tensor2D* tensor) {
 
 void Tensor2D::subtract(Tensor2D* tensor) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeX != tensor->sizeX || this->sizeY != tensor->sizeY) {
-        printf("ERROR! Cannot subtract matrix with size %dx%d to matrix %dx%d.\n", tensor->sizeX, tensor->sizeY, this->sizeX, this->sizeY);
+    if (this->sizeX != tensor->getSize(X) || this->sizeY != tensor->getSize(Y)) {
+        printf("ERROR! Cannot subtract matrix with size %dx%d to matrix %dx%d.\n", tensor->getSize(X), tensor->getSize(Y), this->sizeX, this->sizeY);
         exit(1);
     }
 
@@ -193,46 +199,46 @@ void Tensor2D::scale(float factor) {
 
 Tensor2D* Tensor2D::multiply(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeX != tensor->sizeY) {
-        printf("ERROR! Cannot multiply matrices with shape %dx%d and %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
+    if (this->sizeX != tensor->getSize(Y)) {
+        printf("ERROR! Cannot multiply matrices with shape %dx%d and %dx%d.\n", this->sizeX, this->sizeY, tensor->getSize(X), tensor->getSize(Y));
         exit(1);
     }
 
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
-    dim3 numBlocks((tensor->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
+    dim3 numBlocks((tensor->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    kMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
     return output;
 }
 
 Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeX != tensor->sizeX) {
-        printf("ERROR! Cannot multiply matrix with shape %dx%d by transposition of matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
+    if (this->sizeX != tensor->getSize(X)) {
+        printf("ERROR! Cannot multiply matrix with shape %dx%d by transposition of matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->getSize(X), tensor->getSize(Y));
         exit(1);
     }
 
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
-    dim3 numBlocks((tensor->sizeY + threadsPerBlock.x)/threadsPerBlock.x,
+    dim3 numBlocks((tensor->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
     return output;
 }
 
 Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
-    if (this->sizeY != tensor->sizeY) {
-        printf("ERROR! Cannot multiply transposition of matrix with shape %dx%d by matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
+    if (this->sizeY != tensor->getSize(Y)) {
+        printf("ERROR! Cannot multiply transposition of matrix with shape %dx%d by matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->getSize(X), tensor->getSize(Y));
         exit(1);
     }
 
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
-    dim3 numBlocks((tensor->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
+    dim3 numBlocks((tensor->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeX + threadsPerBlock.y)/threadsPerBlock.y);
-    kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
     return output;
 }
 

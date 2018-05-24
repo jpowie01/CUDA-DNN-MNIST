@@ -6,18 +6,24 @@
 
 #include "tensor1d.h"
 
+enum Tensor2DAxis {
+    X,
+    Y
+};
+
 class Tensor2D {
-public:
-    // TODO: Make me private!
+private:
     int sizeX;
     int sizeY;
     float* devData;
-    
+
+public:
     Tensor2D(int sizeX, int sizeY);
     Tensor2D(int sizeX, int sizeY, float** hostData);
     Tensor2D(int sizeX, int sizeY, float* devData);
     ~Tensor2D();
 
+    int getSize(Tensor2DAxis size);
     float* getDeviceData();
     float** fetchDataFromDevice();
     

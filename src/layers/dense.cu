@@ -43,7 +43,7 @@ Tensor2D* DenseLayer::forward(Tensor2D* data) {
     // Save this data - will be needed for backpropagation
     this->inputData = data;
     if (!this->outputForward) {
-        this->outputForward = new Tensor2D(this->weights->sizeX, this->inputData->sizeY);
+        this->outputForward = new Tensor2D(this->weights->getSize(X), this->inputData->getSize(Y));
     }
 
     // Calculate on GPU: Y = x * W + b
@@ -51,35 +51,35 @@ Tensor2D* DenseLayer::forward(Tensor2D* data) {
     this->outputForward->add(this->bias);
 
     DEBUG_PRINT("=== Layer %d ===\n", this);
-    DEBUG_PRINT("Input Data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
-    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    DEBUG_PRINT("Bias = X: %d\n", this->bias->size);
-    DEBUG_PRINT("Output = X: %d Y: %d\n", this->outputForward->sizeX, this->outputForward->sizeY);
+    DEBUG_PRINT("Input Data = X: %d Y: %d\n", this->inputData->getSize(X), this->inputData->getSize(Y));
+    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->getSize(X), this->weights->getSize(Y));
+    DEBUG_PRINT("Bias = X: %d\n", this->bias->getSize());
+    DEBUG_PRINT("Output = X: %d Y: %d\n", this->outputForward->getSize(X), this->outputForward->getSize(Y));
     return this->outputForward;
 }
 
 Tensor2D* DenseLayer::backward(Tensor2D* gradients) {
     if (!this->deltaWeights) {
-        this->deltaWeights = new Tensor2D(gradients->sizeX, this->inputData->sizeX);
+        this->deltaWeights = new Tensor2D(gradients->getSize(X), this->inputData->getSize(X));
     }
     if (!this->deltaBias) {
-        this->deltaBias = new Tensor1D(gradients->sizeX);
+        this->deltaBias = new Tensor1D(gradients->getSize(X));
     }
     this->inputData->transposeAndMultiply(gradients, this->deltaWeights);
     gradients->meanX(this->deltaBias);
 
     DEBUG_PRINT("\n=== Layer %d ===\n", this);
-    DEBUG_PRINT("Input data = X: %d Y: %d\n", this->inputData->sizeX, this->inputData->sizeY);
-    DEBUG_PRINT("Gradients = X: %d Y: %d\n", gradients->sizeX, gradients->sizeY);
-    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->sizeX, this->weights->sizeY);
-    DEBUG_PRINT("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->sizeX, this->deltaWeights->sizeY);
-    DEBUG_PRINT("Bias = X: %d\n", this->bias->size);
-    DEBUG_PRINT("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->size);
+    DEBUG_PRINT("Input data = X: %d Y: %d\n", this->inputData->getSize(X), this->inputData->getSize(Y));
+    DEBUG_PRINT("Gradients = X: %d Y: %d\n", gradients->getSize(X), gradients->getSize(Y));
+    DEBUG_PRINT("Weights = X: %d Y: %d\n", this->weights->getSize(X), this->weights->getSize(Y));
+    DEBUG_PRINT("Delta Weights (%d) = X: %d Y: %d\n", this->deltaWeights, this->deltaWeights->getSize(X), this->deltaWeights->getSize(Y));
+    DEBUG_PRINT("Bias = X: %d\n", this->bias->getSize());
+    DEBUG_PRINT("Delta Bias (%d) = X: %d\n", this->deltaBias, this->deltaBias->getSize());
 
     if (!this->outputBackward) {
-        this->outputBackward = new Tensor2D(this->weights->sizeY, gradients->sizeY);
+        this->outputBackward = new Tensor2D(this->weights->getSize(Y), gradients->getSize(Y));
     }
     gradients->multiplyByTransposition(this->weights, this->outputBackward);
-    DEBUG_PRINT("Output = X: %d Y: %d\n", this->outputBackward->sizeX, this->outputBackward->sizeY);
+    DEBUG_PRINT("Output = X: %d Y: %d\n", this->outputBackward->getSize(X), this->outputBackward->getSize(Y));
     return this->outputBackward;
 }

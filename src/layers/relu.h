@@ -7,7 +7,7 @@
 
 #include "../tensor/tensor1d.h"
 #include "../tensor/tensor2d.h"
-#include "base.h"
+#include "layer.h"
 
 
 class ReLuLayer: public Layer {

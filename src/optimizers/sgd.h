@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <cmath>
 
-#include "../layers/base.h"
+#include "../layers/layer.h"
 #include "../tensor/tensor2d.h"
-#include "base.h"
+#include "optimizer.h"
 
 
 class SGDOptimizer: public Optimizer {

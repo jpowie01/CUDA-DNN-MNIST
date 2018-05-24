@@ -26,7 +26,7 @@ Tensor2D* SequentialModel::forward(Tensor2D* input) {
 void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
     // Compute gradients with loss function
     if (!this->gradients) {
-        this->gradients = new Tensor2D(output->sizeX, output->sizeY);
+        this->gradients = new Tensor2D(output->getSize(X), output->getSize(Y));
     }
     this->lossFunction->calculate(output, labels, this->gradients);
     #if defined(DEBUG) && DEBUG >= 2
