@@ -17,12 +17,14 @@ private:
     int output;
     
     Tensor2D* inputData;
+    Tensor2D* outputForward;
+    Tensor2D* outputBackward;
 
 public:
     DenseLayer(int input, int output);
 
     Tensor2D* forward(Tensor2D* data);
-    Tensor2D* backward(Tensor2D* gradients, bool firstLayer = false);
+    Tensor2D* backward(Tensor2D* gradients);
 };
 
 #endif  /* !DENSE_H */

@@ -13,6 +13,7 @@ public:
     int sizeY;
     float* devData;
     
+    Tensor2D(int sizeX, int sizeY);
     Tensor2D(int sizeX, int sizeY, float** hostData);
     Tensor2D(int sizeX, int sizeY, float* devData);
     ~Tensor2D();
@@ -24,10 +25,10 @@ public:
     void add(Tensor1D* tensor);
     void subtract(Tensor2D* tensor);
     void scale(float factor);
-    Tensor2D* multiply(Tensor2D* tensor);
-    Tensor2D* multiplyByTransposition(Tensor2D* tensor);
-    Tensor2D* transposeAndMultiply(Tensor2D* tensor);
-    Tensor1D* meanX();
+    Tensor2D* multiply(Tensor2D* tensor, Tensor2D* output);
+    Tensor2D* multiplyByTransposition(Tensor2D* tensor, Tensor2D* output);
+    Tensor2D* transposeAndMultiply(Tensor2D* tensor, Tensor2D* output);
+    Tensor1D* meanX(Tensor1D* output);
 
     void debugPrint();
 };

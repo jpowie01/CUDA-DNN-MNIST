@@ -10,6 +10,7 @@ public:
     int  size;
     float* devData;
 
+    Tensor1D(int size);
     Tensor1D(int size, float* data);
     ~Tensor1D();
 

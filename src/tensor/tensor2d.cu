@@ -94,6 +94,16 @@ void kMeanX(float* a, int aX, int aY, float* b)
     }
 }
 
+Tensor2D::Tensor2D(int sizeX, int sizeY) {
+    this->sizeX = sizeX;
+    this->sizeY = sizeY;
+    if (this->sizeX && this->sizeY) {
+        cudaMalloc((void **)&(this->devData), this->sizeX*this->sizeY*sizeof(float));
+    } else {
+        this->devData = NULL;
+    }
+}
+
 Tensor2D::Tensor2D(int sizeX, int sizeY, float** hostData) {
     this->sizeX = sizeX;
     this->sizeY = sizeY;
@@ -181,73 +191,56 @@ void Tensor2D::scale(float factor) {
     kScale<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), factor, this->sizeX, this->sizeY);
 }
 
-Tensor2D* Tensor2D::multiply(Tensor2D* tensor) {
+Tensor2D* Tensor2D::multiply(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
     if (this->sizeX != tensor->sizeY) {
         printf("ERROR! Cannot multiply matrices with shape %dx%d and %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
         exit(1);
     }
 
-    // Allocate memory for final result of multiplication
-    float* output;
-    cudaMalloc((void **)&(output), tensor->sizeX*this->sizeY*sizeof(float));
-
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((tensor->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output);
-    return new Tensor2D(tensor->sizeX, this->sizeY, output);
+    kMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    return output;
 }
 
-Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor) {
+Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
     if (this->sizeX != tensor->sizeX) {
         printf("ERROR! Cannot multiply matrix with shape %dx%d by transposition of matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
         exit(1);
     }
 
-    // Allocate memory for final result of multiplication
-    float* output;
-    cudaMalloc((void **)&(output), tensor->sizeY*this->sizeY*sizeof(float));
-
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((tensor->sizeY + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
-    kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output);
-    return new Tensor2D(tensor->sizeY, this->sizeY, output);
+    kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    return output;
 }
 
-Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor) {
+Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor, Tensor2D* output) {
     // Check sizes and exit program in case of invalid multiplication
     if (this->sizeY != tensor->sizeY) {
         printf("ERROR! Cannot multiply transposition of matrix with shape %dx%d by matrix %dx%d.\n", this->sizeX, this->sizeY, tensor->sizeX, tensor->sizeY);
         exit(1);
     }
 
-    // Allocate memory for final result of multiplication
-    float* output;
-    cudaMalloc((void **)&(output), tensor->sizeX*this->sizeX*sizeof(float));
-
     // Defer calculations on GPU
     dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     dim3 numBlocks((tensor->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeX + threadsPerBlock.y)/threadsPerBlock.y);
-    kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output);
-    return new Tensor2D(tensor->sizeX, this->sizeX, output);
+    kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->sizeX, tensor->sizeY, output->getDeviceData());
+    return output;
 }
 
-Tensor1D* Tensor2D::meanX() {
-    // Allocate memory for final result of multiplication
-    float* output;
-    cudaMalloc((void **)&(output), this->sizeX*sizeof(float));
-
-    // Defer calculations on GPU
+Tensor1D* Tensor2D::meanX(Tensor1D* output) {
     int threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
     int numBlocks = (this->sizeX + threadsPerBlock)/threadsPerBlock;
-    kMeanX<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, output);
-    return new Tensor1D(this->sizeX, output);
+    kMeanX<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, output->getDeviceData());
+    return output;
 }
 
 void Tensor2D::debugPrint() {

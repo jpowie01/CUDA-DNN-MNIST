@@ -32,7 +32,7 @@ int main() {
     model->addLayer(new DenseLayer(50, 10));
 
     // Run some epochs
-    int epochs = 200;  // TODO: Put it somewhere else to simplify experiments!
+    int epochs = 100;  // TODO: Put it somewhere else to simplify experiments!
     int batchSize = 512;  // TODO: Put it somewhere else to simplify experiments!
     int numberOfTrainBatches = trainDataset->getSize() / batchSize;
     int numberOfTestBatches = testDataset->getSize() / batchSize;
@@ -55,7 +55,6 @@ int main() {
             model->backward(output, labels);
 
             // Clean data for this batch
-            delete output;
             delete images;
             delete labels;
         }
@@ -81,7 +80,6 @@ int main() {
             testAccuracy += loss->getAccuracy(output, labels);
 
             // Clean data for this batch
-            delete output;
             delete images;
             delete labels;
         }

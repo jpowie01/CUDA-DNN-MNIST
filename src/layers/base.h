@@ -17,7 +17,7 @@ public:
     Tensor1D* deltaBias;
 
     virtual Tensor2D* forward(Tensor2D* data) = 0;
-    virtual Tensor2D* backward(Tensor2D* gradients, bool firstLayer = false) = 0;
+    virtual Tensor2D* backward(Tensor2D* gradients) = 0;
 };
 
 #endif  /* !BASE_LAYER_H */

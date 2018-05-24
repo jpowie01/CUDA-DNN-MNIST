@@ -16,12 +16,14 @@ private:
     int output;
     
     Tensor2D* inputData;
+    Tensor2D* outputForward;
+    Tensor2D* outputBackward;
 
 public:
     ReLuLayer(int inputOutput);
 
     Tensor2D* forward(Tensor2D* data);
-    Tensor2D* backward(Tensor2D* gradients, bool firstLayer = false);
+    Tensor2D* backward(Tensor2D* gradients);
 };
 
 #endif  /* !RELU_H */

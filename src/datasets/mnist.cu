@@ -80,7 +80,8 @@ MNISTDataSet::MNISTDataSet(DataSetType type) {
     for (int image = 0; image < this->size; image++) {
         for (int i = 0; i < 28*28; i++) {
             if (stdDevImage[i] > 1e-10) {
-                // TODO: Test set shouldn't apply its mean and std dev values! It should use the same values as were used in the training dataset!
+                // TODO: Test set shouldn't apply its mean and std dev values!
+                // TODO: It should use the same values as were used in the training dataset!
                 this->images[image][i] = (float)(bufferImages[BEGIN_OF_PIXELS + image*28*28 + i] - meanImage[i]) / stdDevImage[i];
             } else {
                 this->images[image][i] = 0.0;

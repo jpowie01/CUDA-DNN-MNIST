@@ -33,11 +33,7 @@ void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
     // Pass these gradients with backpropagation
     Tensor2D* values = gradients;
     for (std::vector<Layer*>::reverse_iterator layer = layers.rbegin(); layer != layers.rend(); layer++) {
-        if (layer+1 == layers.rend()) {
-            values = (*layer)->backward(values, true);
-        } else {
-            values = (*layer)->backward(values);
-        }
+        values = (*layer)->backward(values);
         #if defined(DEBUG) && DEBUG >= 2
         DEBUG_PRINT("\nBackward pass for Layer %d:\n", (*layer));
         values->debugPrint();
