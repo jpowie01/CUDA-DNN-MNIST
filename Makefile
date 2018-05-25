@@ -16,6 +16,7 @@ dataset:
 	gunzip ${DATA_DIR}/test-images.gz
 	gunzip ${DATA_DIR}/test-labels.gz
 
+# TODO: Move from .cu to .cpp files and use two compilers - one for CPU and second one for GPU
 build: FORCE
 	mkdir -p ${BUILD_DIR}
 	nvcc ${SOURCE_FILES} -lineinfo -o ${BUILD_DIR}/${EXEC_FILE}
