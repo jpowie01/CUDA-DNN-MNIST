@@ -5,8 +5,10 @@ This project is an example implementation for training simple feed forward neura
  on a MNIST dataset in pure C++ CUDA code.
 
 **NOTE:** This project is still under development and was created only for fun and to pass
- CUDA project on my University. In case you want to use it for anything else than experiments
- and self-learning - DO NOT DO IT! :)
+ CUDA project on my University. Do not use it for anything except experiments - I cannot
+ guarantee that it will work! :)
+
+Feel free to fork, implement and experiment on your own!
 
 ## How to run?
 
@@ -54,7 +56,7 @@ I've implemented basic object oriented framework with:
 Framework API was inspired by PyTorch and TensorFlow with a little bit of Keras, mixed into
  an implementation that is ready to extend and experiment easily (I hope so...). What's more,
  all linear algebra and math calculations were implemented by myself - I didn't use cuDNN or
- cuBLAS just for training and University project restrictions.
+ cuBLAS just for training and due to University project restrictions.
 
 Due to limited amount of time I haven't implemented any regularization method, dropout layer or
  any other optimizer. If I find enough time, I'll definitely try to do this :)
