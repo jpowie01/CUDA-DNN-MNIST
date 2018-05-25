@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "../configuration.h"
 #include "tensor1d.h"
 
 enum Tensor2DAxis {

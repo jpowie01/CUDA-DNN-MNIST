@@ -45,7 +45,7 @@ Tensor2D* ReLuLayer::forward(Tensor2D* data) {
         this->outputForward = new Tensor2D(data->getSize(X), data->getSize(Y));
     }
 
-    dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::reLuBlockSize, Configuration::reLuBlockSize);
     dim3 numBlocks((data->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (data->getSize(Y) + threadsPerBlock.y)/threadsPerBlock.y);
     kReLuForward<<<numBlocks, threadsPerBlock>>>(data->getDeviceData(), data->getSize(X), data->getSize(Y), this->outputForward->getDeviceData());
@@ -53,7 +53,7 @@ Tensor2D* ReLuLayer::forward(Tensor2D* data) {
 }
  
 Tensor2D* ReLuLayer::backward(Tensor2D* gradients) {
-    dim3 threadsPerBlock(16, 16);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::reLuBlockSize, Configuration::reLuBlockSize);
     dim3 numBlocks((gradients->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (gradients->getSize(Y) + threadsPerBlock.y)/threadsPerBlock.y);
     kReLuBackward<<<numBlocks, threadsPerBlock>>>(gradients->getDeviceData(), gradients->getSize(X), gradients->getSize(Y), gradients->getDeviceData());

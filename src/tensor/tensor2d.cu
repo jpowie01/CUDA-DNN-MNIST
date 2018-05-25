@@ -143,7 +143,7 @@ float** Tensor2D::fetchDataFromDevice() {
     *hostData = new float[this->sizeY * this->sizeX];
     for (int i = 1; i < this->sizeY; i++) hostData[i] = hostData[i-1] + this->sizeX;
 
-    cudaDeviceSynchronize(); 
+    cudaDeviceSynchronize();  // TODO: Is it needed? 
     cudaMemcpy(*hostData, this->devData, this->sizeX*this->sizeY*sizeof(float), cudaMemcpyDeviceToHost);
     return hostData;
 }
@@ -156,7 +156,7 @@ void Tensor2D::add(Tensor1D* tensor) {
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DAddBlockSize, Configuration::tensor2DAddBlockSize);
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kAdd1D<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
@@ -170,7 +170,7 @@ void Tensor2D::add(Tensor2D* tensor) {
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DAddBlockSize, Configuration::tensor2DAddBlockSize);
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kAdd2D<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
@@ -184,14 +184,14 @@ void Tensor2D::subtract(Tensor2D* tensor) {
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DSubtractBlockSize, Configuration::tensor2DSubtractBlockSize);
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kSubtract<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), tensor->getDeviceData(), this->sizeX, this->sizeY);
 }
 
 void Tensor2D::scale(float factor) {
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DScaleBlockSize, Configuration::tensor2DScaleBlockSize);
     dim3 numBlocks((this->sizeX + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kScale<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), factor, this->sizeX, this->sizeY);
@@ -205,7 +205,7 @@ Tensor2D* Tensor2D::multiply(Tensor2D* tensor, Tensor2D* output) {
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DMultiplyBlockSize, Configuration::tensor2DMultiplyBlockSize);
     dim3 numBlocks((tensor->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
@@ -220,7 +220,7 @@ Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor, Tensor2D* output) 
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DMultiplyBlockSize, Configuration::tensor2DMultiplyBlockSize);
     dim3 numBlocks((tensor->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
     kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
@@ -235,7 +235,7 @@ Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor, Tensor2D* output) {
     }
 
     // Defer calculations on GPU
-    dim3 threadsPerBlock(8, 8);  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock(Configuration::tensor2DMultiplyBlockSize, Configuration::tensor2DMultiplyBlockSize);
     dim3 numBlocks((tensor->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (this->sizeX + threadsPerBlock.y)/threadsPerBlock.y);
     kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y), output->getDeviceData());
@@ -243,7 +243,7 @@ Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor, Tensor2D* output) {
 }
 
 Tensor1D* Tensor2D::meanX(Tensor1D* output) {
-    int threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    int threadsPerBlock = Configuration::tensor2DMeanBlockSize;
     int numBlocks = (this->sizeX + threadsPerBlock)/threadsPerBlock;
     kMeanX<<<numBlocks, threadsPerBlock>>>(this->getDeviceData(), this->sizeX, this->sizeY, output->getDeviceData());
     return output;

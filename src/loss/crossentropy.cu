@@ -73,7 +73,7 @@ float CrossEntropyLoss::getLoss(Tensor2D* networkOutput, Tensor2D* labels) {
     cudaMalloc((void**)&dError, sizeof(float));
     cudaMemcpy(dError, &error, sizeof(float), cudaMemcpyHostToDevice);
 
-    dim3 threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock = Configuration::crossEntropyGetMetricBlockSize;
     dim3 numBlocks((networkOutput->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x);
     kSoftMaxCrossEntropyLoss<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->getSize(X), networkOutput->getSize(Y), labels->getDeviceData(), dError);
     cudaMemcpy(&error, dError, sizeof(float), cudaMemcpyDeviceToHost);
@@ -87,7 +87,7 @@ float CrossEntropyLoss::getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) {
     cudaMalloc((void**)&dAccuracy, sizeof(float));
     cudaMemcpy(dAccuracy, &accuracy, sizeof(float), cudaMemcpyHostToDevice);
 
-    dim3 threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock = Configuration::crossEntropyGetMetricBlockSize;
     dim3 numBlocks((networkOutput->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x);
     kSoftMaxCrossEntropyAccuracy<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->getSize(X), networkOutput->getSize(Y), labels->getDeviceData(), dAccuracy);
     cudaMemcpy(&accuracy, dAccuracy, sizeof(float), cudaMemcpyDeviceToHost);
@@ -96,7 +96,7 @@ float CrossEntropyLoss::getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) {
 }
 
 Tensor2D* CrossEntropyLoss::calculate(Tensor2D* networkOutput, Tensor2D* labels, Tensor2D* output) {
-    dim3 threadsPerBlock = 64;  // TODO: Extract this somewhere else, so we'll be able to easily change it during experiments
+    dim3 threadsPerBlock = Configuration::crossEntropyCalculateBlockSize;
     dim3 numBlocks((networkOutput->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x);
     kSoftMaxCrossEntropy<<<numBlocks, threadsPerBlock>>>(networkOutput->getDeviceData(), networkOutput->getSize(X), networkOutput->getSize(Y), labels->getDeviceData(), output->getDeviceData());
     return output;
