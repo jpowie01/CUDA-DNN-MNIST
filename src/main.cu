@@ -14,10 +14,12 @@
 
 int main() {
     // Always initialize seed to some random value
+    clock_t start, end;
     srand(static_cast<unsigned>(time(0)));
 
     // Print our current configuration for this training
     Configuration::printCurrentConfiguration();
+    Configuration::printCUDAConfiguration();
 
     // Read both training and test dataset
     MNISTDataSet* trainDataset = new MNISTDataSet(TRAIN);
@@ -41,6 +43,7 @@ int main() {
     int numberOfTestBatches = testDataset->getSize() / batchSize;
     for (int epoch = 0; epoch < epochs; epoch++) {
         float trainingLoss = 0.0, trainingAccuracy = 0.0;
+        double trainingForwardTime = 0.0, trainingBackwardTime = 0.0;
         printf("Epoch %d:\n", epoch);
         for (int batch = 0; batch < numberOfTrainBatches; batch++) {
             // Fetch batch from dataset
@@ -48,14 +51,24 @@ int main() {
             Tensor2D* labels = trainDataset->getBatchOfLabels(batch, batchSize);
 
             // Forward pass
+            start = clock();
             Tensor2D* output = model->forward(images);
+            cudaDeviceSynchronize();
+            end = clock();
 
-            // Print error
+            // Save statistics
             trainingLoss += loss->getLoss(output, labels);
             trainingAccuracy += loss->getAccuracy(output, labels);
+            trainingForwardTime += double(end - start) / CLOCKS_PER_SEC;
 
             // Backward pass
+            start = clock();
             model->backward(output, labels);
+            cudaDeviceSynchronize();
+            end = clock();
+
+            // Save statistics
+            trainingBackwardTime += double(end - start) / CLOCKS_PER_SEC;
 
             // Clean data for this batch
             delete images;
@@ -65,8 +78,12 @@ int main() {
         // Calculate mean training metrics
         trainingLoss /= numberOfTrainBatches;
         trainingAccuracy /= numberOfTrainBatches;
-        printf("  - Train Loss=%.5f\n", trainingLoss);
-        printf("  - Train Accuracy=%.5f%%\n", trainingAccuracy);
+        printf("  - [Train] Loss=%.5f\n", trainingLoss);
+        printf("  - [Train] Accuracy=%.5f%%\n", trainingAccuracy);
+        printf("  - [Train] Total Forward Time=%.5fms\n", trainingForwardTime * 1000.0);
+        printf("  - [Train] Total Backward Time=%.5fms\n", trainingBackwardTime * 1000.0);
+        printf("  - [Train] Batch Forward Time=%.5fms\n", trainingForwardTime * 1000.0 / numberOfTrainBatches);
+        printf("  - [Train] Batch Backward Time=%.5fms\n", trainingBackwardTime * 1000.0 / numberOfTrainBatches);
 
         // Check model performance on test set
         float testLoss = 0.0, testAccuracy = 0.0;
@@ -90,8 +107,8 @@ int main() {
         // Calculate mean testing metrics
         testLoss /= numberOfTestBatches;
         testAccuracy /= numberOfTestBatches;
-        printf("  - Test Loss=%.5f\n", testLoss);
-        printf("  - Test Accuracy=%.5f%%\n", testAccuracy);
+        printf("  - [Test] Loss=%.5f\n", testLoss);
+        printf("  - [Test] Accuracy=%.5f%%\n", testAccuracy);
         printf("\n");
 
         // Shuffle both datasets before next epoch!

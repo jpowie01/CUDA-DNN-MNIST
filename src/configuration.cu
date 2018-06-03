@@ -17,13 +17,32 @@ float Configuration::getFloatValue(std::string variableName, float defaultValue)
 }
 
 void Configuration::printCurrentConfiguration() {
-    printf("===============================\n");
-    printf("         Configuration\n");
-    printf("===============================\n");
+    printf("=====================================\n");
+    printf("            Configuration\n");
+    printf("=====================================\n");
     printf(" NumberOfEpochs: %d\n", Configuration::numberOfEpochs);
     printf(" BatchSize: %d\n", Configuration::batchSize);
     printf(" LearningRate: %e\n", Configuration::learningRate);
-    printf("===============================\n");
+    printf("=====================================\n");
+    printf("\n");
+}
+
+void Configuration::printCUDAConfiguration() {
+    printf("=====================================\n");
+    printf("         CUDA Configuration\n");
+    printf("=====================================\n");
+    printf(" Tensor2DAddBlockSize: %d\n", Configuration::tensor2DAddBlockSize);
+    printf(" Tensor2DSubtractBlockSize: %d\n", Configuration::tensor2DSubtractBlockSize);
+    printf(" Tensor2DScaleBlockSize: %d\n", Configuration::tensor2DScaleBlockSize);
+    printf(" Tensor2DMultiplyBlockSize: %d\n", Configuration::tensor2DMultiplyBlockSize);
+    printf(" Tensor2DMultiplyBlockNumber: %d\n", Configuration::tensor2DMultiplyBlockNumber);
+    printf(" Tensor2DMeanBlockSize: %d\n", Configuration::tensor2DMeanBlockSize);
+    printf("-------------------------------------\n");
+    printf(" ReLuBlockSize: %d\n", Configuration::reLuBlockSize);
+    printf("-------------------------------------\n");
+    printf(" CrossEntropyGetMetricBlockSize: %d\n", Configuration::crossEntropyGetMetricBlockSize);
+    printf(" CrossEntropyCalculateBlockSize: %d\n", Configuration::crossEntropyCalculateBlockSize);
+    printf("=====================================\n");
     printf("\n");
 }
 
@@ -35,6 +54,7 @@ int Configuration::tensor2DAddBlockSize = getIntValue("TENSOR2D_ADD_BLOCK_SIZE",
 int Configuration::tensor2DSubtractBlockSize = getIntValue("TENSOR2D_SUBTRACT_BLOCK_SIZE", DEFAULT_TENSOR2D_SUBTRACT_BLOCK_SIZE);
 int Configuration::tensor2DScaleBlockSize = getIntValue("TENSOR2D_SCALE_BLOCK_SIZE", DEFAULT_TENSOR2D_SCALE_BLOCK_SIZE);
 int Configuration::tensor2DMultiplyBlockSize = getIntValue("TENSOR2D_MULTIPLY_BLOCK_SIZE", DEFAULT_TENSOR2D_MULTIPLY_BLOCK_SIZE);
+int Configuration::tensor2DMultiplyBlockNumber = getIntValue("TENSOR2D_MULTIPLY_BLOCK_NUMBER", DEFAULT_TENSOR2D_MULTIPLY_BLOCK_NUMBER);
 int Configuration::tensor2DMeanBlockSize = getIntValue("TENSOR2D_MEAN_BLOCK_SIZE", DEFAULT_TENSOR2D_MEAN_BLOCK_SIZE);
 
 int Configuration::reLuBlockSize = getIntValue("RELU_BLOCK_SIZE", DEFAULT_TENSOR2D_RELU_BLOCK_SIZE);
