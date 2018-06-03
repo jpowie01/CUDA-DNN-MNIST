@@ -1,4 +1,4 @@
-#include "configuration.hpp"
+#include "configuration.cuh"
 
 int Configuration::getIntValue(std::string variableName, int defaultValue) {
     char* envValue = std::getenv(variableName.c_str());
@@ -28,9 +28,16 @@ void Configuration::printCurrentConfiguration() {
 }
 
 void Configuration::printCUDAConfiguration() {
+    cudaDeviceProp properties;
+    cudaGetDeviceProperties(&properties, 0);  // Takes only one (first) GPU
+
     printf("=====================================\n");
     printf("         CUDA Configuration\n");
     printf("=====================================\n");
+    printf(" Device name: %s\n", properties.name);
+    printf(" Memory Clock Rate (KHz): %d\n", properties.memoryClockRate);
+    printf(" Memory Bus Width (bits): %d\n", properties.memoryBusWidth);
+    printf("-------------------------------------\n");
     printf(" Tensor2DAddBlockSize: %d\n", Configuration::tensor2DAddBlockSize);
     printf(" Tensor2DSubtractBlockSize: %d\n", Configuration::tensor2DSubtractBlockSize);
     printf(" Tensor2DScaleBlockSize: %d\n", Configuration::tensor2DScaleBlockSize);

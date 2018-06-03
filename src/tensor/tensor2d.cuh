@@ -4,7 +4,7 @@
 
 #include <cstdio>
 
-#include "../configuration.hpp"
+#include "../configuration.cuh"
 #include "tensor1d.cuh"
 
 enum Tensor2DAxis {

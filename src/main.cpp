@@ -9,7 +9,7 @@
 #include "models/sequential.cuh"
 #include "datasets/mnist.hpp"
 #include "utils.hpp"
-#include "configuration.hpp"
+#include "configuration.cuh"
 
 
 int main() {

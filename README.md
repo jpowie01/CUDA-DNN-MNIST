@@ -23,25 +23,65 @@ $> make run
 **Example output**:
 
 ```
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 100
+ BatchSize: 512
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX 1060 6GB
+ Memory Clock Rate (KHz): 4004000
+ Memory Bus Width (bits): 192
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 8
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
 Epoch 0:
-  - Train Loss=3.21774
-  - Train Accuracy=1.97817%
-  - Test Loss=nan
-  - Test Accuracy=2.84745%
+  - [Train] Loss=3.25744
+  - [Train] Accuracy=2.03158%
+  - [Train] Total Forward Time=137.54800ms
+  - [Train] Total Backward Time=282.41300ms
+  - [Train] Batch Forward Time=1.17562ms
+  - [Train] Batch Backward Time=2.41379ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.64186%
 
 Epoch 1:
-  - Train Loss=3.17043
-  - Train Accuracy=2.00154%
-  - Test Loss=nan
-  - Test Accuracy=3.05304%
+  - [Train] Loss=3.19937
+  - [Train] Accuracy=1.93142%
+  - [Train] Total Forward Time=117.23500ms
+  - [Train] Total Backward Time=242.62400ms
+  - [Train] Batch Forward Time=1.00201ms
+  - [Train] Batch Backward Time=2.07371ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.69326%
 
 ...
 
 Epoch 99:
-  - Train Loss=1.50781
-  - Train Accuracy=82.80081%
-  - Test Loss=nan
-  - Test Accuracy=94.37705%
+  - [Train] Loss=1.51196
+  - [Train] Accuracy=78.76603%
+  - [Train] Total Forward Time=118.42700ms
+  - [Train] Total Backward Time=245.76100ms
+  - [Train] Batch Forward Time=1.01220ms
+  - [Train] Batch Backward Time=2.10052ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=93.28741%
 ```
 
 ## What have I done?
@@ -73,8 +113,7 @@ $> ...
 $> make run
 ```
 
-Default values that will be used if above variables were not defined can be found in
- `src/configuration.h` file.
+Default values can be found in `src/configuration.h` file.
 
 ## Experiments/Benchmarks
 
