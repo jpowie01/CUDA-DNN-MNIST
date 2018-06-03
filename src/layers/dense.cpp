@@ -1,4 +1,4 @@
-#include "dense.h"
+#include "dense.hpp"
 
 DenseLayer::DenseLayer(int input, int output) {
     this->input = input;

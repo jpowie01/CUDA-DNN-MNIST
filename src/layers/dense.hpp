@@ -1,14 +1,14 @@
 #pragma once
-#ifndef DENSE_H
-#define DENSE_H
+#ifndef DENSE_HPP
+#define DENSE_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../tensor/tensor1d.h"
-#include "../tensor/tensor2d.h"
-#include "../utils.h"
-#include "layer.h"
+#include "../tensor/tensor1d.cuh"
+#include "../tensor/tensor2d.cuh"
+#include "../utils.hpp"
+#include "layer.hpp"
 
 
 class DenseLayer: public Layer {
@@ -27,4 +27,4 @@ public:
     Tensor2D* backward(Tensor2D* gradients);
 };
 
-#endif  /* !DENSE_H */
+#endif  /* !DENSE_HPP */

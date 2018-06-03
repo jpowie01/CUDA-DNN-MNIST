@@ -1,4 +1,4 @@
-#include "mnist.h"
+#include "mnist.hpp"
 
 #define BEGIN_OF_PIXELS 16
 #define BEGIN_OF_LABELS 8

@@ -1,4 +1,4 @@
-#include "layer.h"
+#include "layer.hpp"
 
 Tensor2D* Layer::getWeights() {
     return this->weights;

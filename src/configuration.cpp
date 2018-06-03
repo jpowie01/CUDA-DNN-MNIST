@@ -1,11 +1,11 @@
-#include "configuration.h"
+#include "configuration.hpp"
 
 int Configuration::getIntValue(std::string variableName, int defaultValue) {
     char* envValue = std::getenv(variableName.c_str());
     if (!envValue) {
         return defaultValue;
     }
-    return atoi(envValue);
+    return std::atoi(envValue);
 }
 
 float Configuration::getFloatValue(std::string variableName, float defaultValue) {

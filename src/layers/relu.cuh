@@ -1,13 +1,13 @@
 #pragma once
-#ifndef RELU_H
-#define RELU_H
+#ifndef RELU_HPP
+#define RELU_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../tensor/tensor1d.h"
-#include "../tensor/tensor2d.h"
-#include "layer.h"
+#include "../tensor/tensor1d.cuh"
+#include "../tensor/tensor2d.cuh"
+#include "layer.hpp"
 
 
 class ReLuLayer: public Layer {
@@ -26,4 +26,4 @@ public:
     Tensor2D* backward(Tensor2D* gradients);
 };
 
-#endif  /* !RELU_H */
+#endif  /* !RELU_HPP */

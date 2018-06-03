@@ -3,7 +3,8 @@ DATA_DIR = data
 BUILD_DIR = build
 EXEC_FILE = CUDA-DNN-MNIST
 
-SOURCE_FILES := $(shell find $(SOURCEDIR) -name '*.cu')
+CPU_SOURCE_FILES := $(shell find $(SOURCEDIR) -name '*.cpp')
+GPU_SOURCE_FILES := $(shell find $(SOURCEDIR) -name '*.cu')
 
 dataset:
 	mkdir -p ${DATA_DIR}
@@ -16,10 +17,9 @@ dataset:
 	gunzip ${DATA_DIR}/test-images.gz
 	gunzip ${DATA_DIR}/test-labels.gz
 
-# TODO: Move from .cu to .cpp files and use two compilers - one for CPU and second one for GPU
 build: FORCE
 	mkdir -p ${BUILD_DIR}
-	nvcc ${SOURCE_FILES} -lineinfo -o ${BUILD_DIR}/${EXEC_FILE}
+	nvcc ${CPU_SOURCE_FILES} ${GPU_SOURCE_FILES} -lineinfo -o ${BUILD_DIR}/${EXEC_FILE}
 
 run:
 	./${BUILD_DIR}/${EXEC_FILE}

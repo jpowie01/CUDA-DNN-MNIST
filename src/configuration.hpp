@@ -1,8 +1,9 @@
 #pragma once
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef CONFIGURATION_HPP
+#define CONFIGURATION_HPP
 
 #include <string>
+#include <cstdlib>
 #include <cstdio>
 
 #define DEFAULT_NUMBER_OF_EPOCHS    100
@@ -47,4 +48,4 @@ public:
     static void printCUDAConfiguration();
 };
 
-#endif /* !CONFIGURATION_H */
+#endif /* !CONFIGURATION_HPP */

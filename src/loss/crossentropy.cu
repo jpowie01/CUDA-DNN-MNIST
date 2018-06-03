@@ -1,4 +1,4 @@
-#include "crossentropy.h"
+#include "crossentropy.cuh"
 
 #define VERY_SMALL_NUMBER 1e-10
 

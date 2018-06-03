@@ -1,4 +1,4 @@
-#include "tensor1d.h"
+#include "tensor1d.cuh"
 
 __global__
 void kAdd(float *a, float *b, int N) {

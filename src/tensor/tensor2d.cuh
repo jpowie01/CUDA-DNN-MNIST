@@ -1,11 +1,11 @@
 #pragma once
-#ifndef TENSOR2D_H
-#define TENSOR2D_H
+#ifndef TENSOR2D_HPP
+#define TENSOR2D_HPP
 
-#include <stdio.h>
+#include <cstdio>
 
-#include "../configuration.h"
-#include "tensor1d.h"
+#include "../configuration.hpp"
+#include "tensor1d.cuh"
 
 enum Tensor2DAxis {
     X,
@@ -40,4 +40,4 @@ public:
     void debugPrint();
 };
 
-#endif  /* !TENSOR2D_H */
+#endif  /* !TENSOR2D_HPP */

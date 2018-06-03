@@ -1,11 +1,14 @@
 #pragma once
-#ifndef MNIST_H
-#define MNIST_H
+#ifndef MNIST_HPP
+#define MNIST_HPP
 
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
 
-#include "../tensor/tensor2d.h"
-#include "../utils.h"
+#include "../tensor/tensor2d.cuh"
+#include "../utils.hpp"
 
 
 enum DataSetType {
@@ -29,4 +32,4 @@ public:
     Tensor2D* getBatchOfLabels(int index, int size);
 };
 
-#endif  /* !MNIST_H */
+#endif  /* !MNIST_HPP */

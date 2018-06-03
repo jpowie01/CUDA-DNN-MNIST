@@ -1,4 +1,4 @@
-#include "sgd.h"
+#include "sgd.hpp"
 
 SGDOptimizer::SGDOptimizer(float learningRate) {
     this->learningRate = learningRate;

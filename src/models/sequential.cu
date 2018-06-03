@@ -1,4 +1,4 @@
-#include "sequential.h"
+#include "sequential.cuh"
 
 SequentialModel::SequentialModel(Optimizer* optimizer, LossFunction* lossFunction) {
     this->optimizer = optimizer;
@@ -11,7 +11,7 @@ void SequentialModel::addLayer(Layer* layer) {
     this->layers.push_back(layer);
 }
 
-Tensor2D* SequentialModel::forward(Tensor2D* input) {
+Tensor2D* SequentialModel::forward(Tensor2D* input, bool synchronize) {
     Tensor2D* values = input;
     for (std::vector<Layer*>::iterator layer = layers.begin(); layer != layers.end(); layer++) {
         values = (*layer)->forward(values);
@@ -20,10 +20,15 @@ Tensor2D* SequentialModel::forward(Tensor2D* input) {
         values->debugPrint();
         #endif
     }
+
+    // Optionally synchronize
+    if (synchronize) {
+        cudaDeviceSynchronize();
+    }
     return values;
 }
 
-void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
+void SequentialModel::backward(Tensor2D* output, Tensor2D* labels, bool synchronize) {
     // Compute gradients with loss function
     if (!this->gradients) {
         this->gradients = new Tensor2D(output->getSize(X), output->getSize(Y));
@@ -47,5 +52,10 @@ void SequentialModel::backward(Tensor2D* output, Tensor2D* labels) {
     // Updates all layers with optimizer
     for (std::vector<Layer*>::iterator layer = layers.begin(); layer != layers.end(); layer++) {
         optimizer->optimize(*layer);
+    }
+
+    // Optionally synchronize
+    if (synchronize) {
+        cudaDeviceSynchronize();
     }
 }

@@ -1,15 +1,15 @@
-#include <stdio.h>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
-#include "layers/dense.h"
-#include "layers/relu.h"
-#include "optimizers/sgd.h"
-#include "loss/crossentropy.h"
-#include "models/sequential.h"
-#include "datasets/mnist.h"
-#include "utils.h"
-#include "configuration.h"
+#include "layers/dense.hpp"
+#include "layers/relu.cuh"
+#include "optimizers/sgd.hpp"
+#include "loss/crossentropy.cuh"
+#include "models/sequential.cuh"
+#include "datasets/mnist.hpp"
+#include "utils.hpp"
+#include "configuration.hpp"
 
 
 int main() {
@@ -52,8 +52,7 @@ int main() {
 
             // Forward pass
             start = clock();
-            Tensor2D* output = model->forward(images);
-            cudaDeviceSynchronize();
+            Tensor2D* output = model->forward(images, SYNCHRONIZE_FORWARD);
             end = clock();
 
             // Save statistics
@@ -63,8 +62,7 @@ int main() {
 
             // Backward pass
             start = clock();
-            model->backward(output, labels);
-            cudaDeviceSynchronize();
+            model->backward(output, labels, SYNCHRONIZE_BACKWARD);
             end = clock();
 
             // Save statistics

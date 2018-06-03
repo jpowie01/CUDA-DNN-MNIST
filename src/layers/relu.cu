@@ -1,4 +1,4 @@
-#include "relu.h"
+#include "relu.cuh"
 
 __global__
 void kReLuForward(float *a, int sizeX, int sizeY, float* b) {

@@ -1,12 +1,14 @@
 #pragma once
-#ifndef CROSSENTROPY_H
-#define CROSSENTROPY_H
+#ifndef CROSSENTROPY_HPP
+#define CROSSENTROPY_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../tensor/tensor2d.h"
-#include "lossfunction.h"
+#include "../tensor/tensor2d.cuh"
+#include "lossfunction.hpp"
+
+#define VERY_SMALL_NUMBER 1e-10
 
 
 class CrossEntropyLoss: public LossFunction {
@@ -20,4 +22,4 @@ public:
     float getAccuracy(Tensor2D* networkOutput, Tensor2D* labels);
 };
 
-#endif  /* !CROSSENTROPY_H */
+#endif  /* !CROSSENTROPY_HPP */

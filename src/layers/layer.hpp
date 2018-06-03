@@ -1,12 +1,12 @@
 #pragma once
-#ifndef BASE_LAYER_H
-#define BASE_LAYER_H
+#ifndef LAYER_HPP
+#define LAYER_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../tensor/tensor1d.h"
-#include "../tensor/tensor2d.h"
+#include "../tensor/tensor1d.cuh"
+#include "../tensor/tensor2d.cuh"
 
 class Layer {
 protected:
@@ -25,4 +25,4 @@ public:
     virtual Tensor2D* backward(Tensor2D* gradients) = 0;
 };
 
-#endif  /* !BASE_LAYER_H */
+#endif  /* !LAYER_HPP */

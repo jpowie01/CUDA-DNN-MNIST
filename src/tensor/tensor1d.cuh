@@ -1,6 +1,6 @@
 #pragma once
-#ifndef TENSOR1D_H
-#define TENSOR1D_H
+#ifndef TENSOR1D_HPP
+#define TENSOR1D_HPP
 
 #include <cstdio>
 
@@ -23,4 +23,4 @@ public:
     void scale(float factor);
 };
 
-#endif  /* !TENSOR1D_H */
+#endif  /* !TENSOR1D_HPP */

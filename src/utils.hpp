@@ -1,6 +1,8 @@
 #pragma once
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
+#include <cstdlib>
 
 /* Debugging levels
  * ----------------
@@ -20,4 +22,4 @@
 float randomFloat(float a, float b);
 int randomInt(int a, int b);
 
-#endif /* !UTILS_H */
+#endif /* !UTILS_HPP */

@@ -1,13 +1,13 @@
 #pragma once
-#ifndef SGD_H
-#define SGS_H
+#ifndef SGD_HPP
+#define SGS_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../layers/layer.h"
-#include "../tensor/tensor2d.h"
-#include "optimizer.h"
+#include "../layers/layer.hpp"
+#include "../tensor/tensor2d.cuh"
+#include "optimizer.hpp"
 
 
 class SGDOptimizer: public Optimizer {
@@ -20,4 +20,4 @@ public:
     void optimize(Layer* layer);
 };
 
-#endif  /* !SGD_H */
+#endif  /* !SGD_HPP */

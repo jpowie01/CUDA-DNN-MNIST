@@ -1,11 +1,11 @@
 #pragma once
-#ifndef BASE_LOSS_H
-#define BASE_LOSS_H
+#ifndef LOSS_FUNCTION_HPP
+#define LOSS_FUNCTION_HPP
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
-#include "../tensor/tensor2d.h"
+#include "../tensor/tensor2d.cuh"
 
 class LossFunction {
 public:
@@ -14,4 +14,4 @@ public:
     virtual float getAccuracy(Tensor2D* networkOutput, Tensor2D* labels) = 0;
 };
 
-#endif  /* !BASE_LOSS_H */
+#endif  /* !LOSS_FUNCTION_HPP */
