@@ -105,7 +105,7 @@ Due to limited amount of time I haven't implemented any regularization method, d
 
 Training parameters can be configured via environment variables like this:
 
-```
+```bash
 $> export NUMBER_OF_EPOCHS=500
 $> export BATCH_SIZE=128
 $> export LEARNING_RATE=1e-6
