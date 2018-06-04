@@ -12,7 +12,7 @@
 #include "configuration.cuh"
 
 
-int main() {
+int main() {   
     // Always initialize seed to some random value
     clock_t start, end;
     srand(static_cast<unsigned>(time(0)));

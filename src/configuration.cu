@@ -43,6 +43,7 @@ void Configuration::printCUDAConfiguration() {
     printf(" Tensor2DScaleBlockSize: %d\n", Configuration::tensor2DScaleBlockSize);
     printf(" Tensor2DMultiplyBlockSize: %d\n", Configuration::tensor2DMultiplyBlockSize);
     printf(" Tensor2DMultiplyBlockNumber: %d\n", Configuration::tensor2DMultiplyBlockNumber);
+    printf(" Tensor2DMultiplySharedMemory: %d\n", Configuration::tensor2DMultiplySharedMemory);
     printf(" Tensor2DMeanBlockSize: %d\n", Configuration::tensor2DMeanBlockSize);
     printf("-------------------------------------\n");
     printf(" ReLuBlockSize: %d\n", Configuration::reLuBlockSize);
@@ -62,6 +63,7 @@ int Configuration::tensor2DSubtractBlockSize = getIntValue("TENSOR2D_SUBTRACT_BL
 int Configuration::tensor2DScaleBlockSize = getIntValue("TENSOR2D_SCALE_BLOCK_SIZE", DEFAULT_TENSOR2D_SCALE_BLOCK_SIZE);
 int Configuration::tensor2DMultiplyBlockSize = getIntValue("TENSOR2D_MULTIPLY_BLOCK_SIZE", DEFAULT_TENSOR2D_MULTIPLY_BLOCK_SIZE);
 int Configuration::tensor2DMultiplyBlockNumber = getIntValue("TENSOR2D_MULTIPLY_BLOCK_NUMBER", DEFAULT_TENSOR2D_MULTIPLY_BLOCK_NUMBER);
+int Configuration::tensor2DMultiplySharedMemory = getIntValue("TENSOR2D_MULTIPLY_SHARED_MEMORY", DEFAULT_TENSOR2D_MULTIPLY_SHARED_MEMORY);
 int Configuration::tensor2DMeanBlockSize = getIntValue("TENSOR2D_MEAN_BLOCK_SIZE", DEFAULT_TENSOR2D_MEAN_BLOCK_SIZE);
 
 int Configuration::reLuBlockSize = getIntValue("RELU_BLOCK_SIZE", DEFAULT_TENSOR2D_RELU_BLOCK_SIZE);

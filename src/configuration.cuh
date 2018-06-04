@@ -15,6 +15,7 @@
 #define DEFAULT_TENSOR2D_SCALE_BLOCK_SIZE       8
 #define DEFAULT_TENSOR2D_MULTIPLY_BLOCK_SIZE    8
 #define DEFAULT_TENSOR2D_MULTIPLY_BLOCK_NUMBER  -1  // Dynamic
+#define DEFAULT_TENSOR2D_MULTIPLY_SHARED_MEMORY 0   // Turned off
 #define DEFAULT_TENSOR2D_MEAN_BLOCK_SIZE        8
 
 #define DEFAULT_TENSOR2D_RELU_BLOCK_SIZE        8
@@ -37,6 +38,7 @@ public:
     static int tensor2DScaleBlockSize;
     static int tensor2DMultiplyBlockSize;
     static int tensor2DMultiplyBlockNumber;
+    static int tensor2DMultiplySharedMemory;
     static int tensor2DMeanBlockSize;
 
     static int reLuBlockSize;
