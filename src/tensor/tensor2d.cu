@@ -42,6 +42,8 @@ void kMultiply(int fieldsPerBlockX, int fieldsPerBlockY, int fieldsPerThreadX, i
                float* B, int bX, int bY,
                float* C)
 {
+    int outputSizeX = bX;
+    int outputSizeY = aY;
     int blockStartX = blockIdx.x * fieldsPerBlockX;
     int blockStartY = blockIdx.y * fieldsPerBlockY;
     int blockEndX = min(bX, blockStartX + fieldsPerBlockX);
@@ -72,11 +74,13 @@ void kMultiplyWithSharedMemory(float* A, int aX, int aY,
                                float* B, int bX, int bY,
                                float* C)
 {
+    int outputSizeX = bX;
+    int outputSizeY = aY;
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
-    int chunks = aX / blockDim.x;  // TODO: + blockDim.x
+    int chunks = (aX + blockDim.x) / blockDim.x;
 
-    if (x >= bX || y >= aY) return;
+    if (x >= outputSizeX || y >= outputSizeY) return;
 
     extern __shared__ float sub[];
     float* As = sub;
@@ -84,16 +88,28 @@ void kMultiplyWithSharedMemory(float* A, int aX, int aY,
 
     float sum = 0.0f;
     for (int chunk = 0; chunk < chunks; chunk++) {
-        As[threadIdx.y * blockDim.x + threadIdx.x] = A[blockIdx.y * blockDim.y * aX + threadIdx.y * aX + chunk * blockDim.x + threadIdx.x];
-        Bs[threadIdx.y * blockDim.x + threadIdx.x] = B[chunk * blockDim.y * bX + threadIdx.y * bX + blockIdx.x * blockDim.x + threadIdx.x];
-        __syncthreads();
+        // Safely copy data from matrix A
+        if (chunk * blockDim.x + threadIdx.x < aX && blockIdx.y * blockDim.y + threadIdx.y < aY) {
+            As[threadIdx.y * blockDim.x + threadIdx.x] = A[(blockIdx.y * blockDim.y + threadIdx.y) * aX + chunk * blockDim.x + threadIdx.x];
+        } else {
+            As[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
+        }
 
+        // Safely copy data from matrix B
+        if (blockIdx.x * blockDim.x + threadIdx.x < bX && chunk * blockDim.y + threadIdx.y < bY) {
+            Bs[threadIdx.y * blockDim.x + threadIdx.x] = B[(chunk * blockDim.y + threadIdx.y) * bX + blockIdx.x * blockDim.x + threadIdx.x];
+        } else {
+            Bs[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
+        }
+
+        // Run calculations on shared memory matrix
+        __syncthreads();
         for (int i = 0; i < blockDim.x; i++) {
             sum += As[threadIdx.y * blockDim.x + i] * Bs[i * blockDim.x + threadIdx.x];
         }
         __syncthreads();
     }
-    C[y*bX + x] = sum;
+    C[y*outputSizeX + x] = sum;
 }
 
 __global__
