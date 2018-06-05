@@ -23,10 +23,13 @@
 #define DEFAULT_CROSSENTROPY_GET_METRIC_BLOCK_SIZE      64
 #define DEFAULT_CROSSENTROPY_CALCULATE_BLOCK_SIZE       64
 
+#define DEFAULT_LOG_FILE_NAME       "logs/experiment.csv"
+
 class Configuration {
 private:
     static int getIntValue(std::string variableName, int defaultValue);
     static float getFloatValue(std::string variableName, float defaultValue);
+    static std::string getStringValue(std::string variableName, std::string defaultValue);
 
 public:
     static float learningRate;
@@ -45,6 +48,8 @@ public:
 
     static int crossEntropyGetMetricBlockSize;
     static int crossEntropyCalculateBlockSize;
+
+    static std::string logFileName;
 
     static void printCurrentConfiguration();
     static void printCUDAConfiguration();

@@ -16,6 +16,14 @@ float Configuration::getFloatValue(std::string variableName, float defaultValue)
     return atof(envValue);
 }
 
+std::string Configuration::getStringValue(std::string variableName, std::string defaultValue) {
+    char* envValue = std::getenv(variableName.c_str());
+    if (!envValue) {
+        return defaultValue;
+    }
+    return std::string(envValue);
+}
+
 void Configuration::printCurrentConfiguration() {
     printf("=====================================\n");
     printf("            Configuration\n");
@@ -70,3 +78,5 @@ int Configuration::reLuBlockSize = getIntValue("RELU_BLOCK_SIZE", DEFAULT_TENSOR
 
 int Configuration::crossEntropyGetMetricBlockSize = getIntValue("CROSSENTROPY_GET_METRIC_BLOCK_SIZE", DEFAULT_CROSSENTROPY_GET_METRIC_BLOCK_SIZE);
 int Configuration::crossEntropyCalculateBlockSize = getIntValue("CROSSENTROPY_CALCULATE_BLOCK_SIZE", DEFAULT_CROSSENTROPY_CALCULATE_BLOCK_SIZE);
+
+std::string Configuration::logFileName = getStringValue("LOG_FILE_NAME", DEFAULT_LOG_FILE_NAME);

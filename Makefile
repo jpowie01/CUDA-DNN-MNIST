@@ -1,6 +1,7 @@
 SOURCE_DIR = src
 DATA_DIR = data
 BUILD_DIR = build
+LOGS_DIR = logs
 EXEC_FILE = CUDA-DNN-MNIST
 
 CPU_SOURCE_FILES := $(shell find $(SOURCEDIR) -name '*.cpp')
@@ -22,7 +23,12 @@ build: FORCE
 	nvcc ${CPU_SOURCE_FILES} ${GPU_SOURCE_FILES} -lineinfo -o ${BUILD_DIR}/${EXEC_FILE}
 
 run:
+	mkdir -p ${LOGS_DIR}
 	./${BUILD_DIR}/${EXEC_FILE}
+
+run_experiments:
+	mkdir -p ${LOGS_DIR}
+	python3 run_experiments.py
 
 clean:
 	rm -rf ${BUILD_DIR}

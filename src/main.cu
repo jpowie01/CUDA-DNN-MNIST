@@ -10,6 +10,7 @@
 #include "datasets/mnist.hpp"
 #include "utils.hpp"
 #include "configuration.cuh"
+#include "csv_logger.hpp"
 
 
 int main() {   
@@ -35,6 +36,9 @@ int main() {
     model->addLayer(new DenseLayer(28*28, 100));
     model->addLayer(new ReLuLayer(100));
     model->addLayer(new DenseLayer(100, 10));
+
+    // Prepare logger that will help us gather timings from experiments
+    CSVLogger* logger = new CSVLogger(Configuration::logFileName);
 
     // Run some epochs
     int epochs = Configuration::numberOfEpochs;
@@ -109,9 +113,17 @@ int main() {
         printf("  - [Test] Accuracy=%.5f%%\n", testAccuracy);
         printf("\n");
 
+        // Save times to the logger
+        logger->logEpoch(trainingLoss, trainingAccuracy,
+                         testLoss, testAccuracy,
+                         trainingForwardTime * 1000, trainingBackwardTime * 1000,
+                         trainingForwardTime * 1000.0 / numberOfTrainBatches,
+                         trainingBackwardTime * 1000.0 / numberOfTrainBatches);
+
         // Shuffle both datasets before next epoch!
         trainDataset->shuffle();
         testDataset->shuffle();
     }
+    delete logger;
     return 0;
 }

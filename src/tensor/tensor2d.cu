@@ -46,8 +46,8 @@ void kMultiply(int fieldsPerBlockX, int fieldsPerBlockY, int fieldsPerThreadX, i
     int outputSizeY = aY;
     int blockStartX = blockIdx.x * fieldsPerBlockX;
     int blockStartY = blockIdx.y * fieldsPerBlockY;
-    int blockEndX = min(bX, blockStartX + fieldsPerBlockX);
-    int blockEndY = min(aY, blockStartY + fieldsPerBlockY);
+    int blockEndX = min(outputSizeX, blockStartX + fieldsPerBlockX);
+    int blockEndY = min(outputSizeY, blockStartY + fieldsPerBlockY);
     int threadStartX = threadIdx.x * fieldsPerThreadX;
     int threadStartY = threadIdx.y * fieldsPerThreadY;
     int threadEndX = threadStartX + fieldsPerThreadX;
