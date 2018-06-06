@@ -144,6 +144,49 @@ void kMultiplyByTransposition(int fieldsPerBlockX, int fieldsPerBlockY, int fiel
 }
 
 __global__
+void kMultiplyByTranspositionWithSharedMemory(float* A, int aX, int aY,
+                                              float* B, int bX, int bY,
+                                              float* C)
+{
+    int outputSizeX = bY;
+    int outputSizeY = aY;
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    int chunks = (aX + blockDim.x) / blockDim.x;
+
+    if (x >= outputSizeX || y >= outputSizeY) return;
+
+    extern __shared__ float sub[];
+    float* As = sub;
+    float* Bs = sub + blockDim.x * blockDim.y;
+
+    float sum = 0.0f;
+    for (int chunk = 0; chunk < chunks; chunk++) {
+        // Safely copy data from matrix A
+        if (chunk * blockDim.x + threadIdx.x < aX && blockIdx.y * blockDim.y + threadIdx.y < aY) {
+            As[threadIdx.y * blockDim.x + threadIdx.x] = A[(blockIdx.y * blockDim.y + threadIdx.y) * aX + chunk * blockDim.x + threadIdx.x];
+        } else {
+            As[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
+        }
+
+        // Safely copy data from matrix B
+        if (chunk * blockDim.x + threadIdx.x < bX && blockIdx.x * blockDim.y + threadIdx.y < bY) {
+            Bs[threadIdx.y * blockDim.x + threadIdx.x] = B[(blockIdx.x * blockDim.y + threadIdx.y) * bX + chunk * blockDim.x + threadIdx.x];
+        } else {
+            Bs[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
+        }
+
+        // Run calculations on shared memory matrix
+        __syncthreads();
+        for (int i = 0; i < blockDim.x; i++) {
+            sum += As[threadIdx.y * blockDim.x + i] * Bs[threadIdx.x * blockDim.x + i];
+        }
+        __syncthreads();
+    }
+    C[y*outputSizeX + x] = sum;
+}
+
+__global__
 void kTransposeAndMultiply(int fieldsPerBlockX, int fieldsPerBlockY, int fieldsPerThreadX, int fieldsPerThreadY,
                            float* A, int aX, int aY,
                            float* B, int bX, int bY,
@@ -172,6 +215,52 @@ void kTransposeAndMultiply(int fieldsPerBlockX, int fieldsPerBlockY, int fieldsP
             C[y*bX + x] = sum;
         }
     }
+}
+
+__global__
+void kTransposeAndMultiplyWithSharedMemory(float* A, int aX, int aY,
+                                           float* B, int bX, int bY,
+                                           float* C)
+{
+    int outputSizeX = bX;
+    int outputSizeY = aX;
+    int elementsInChunk = blockDim.x;  // X & Y should be equal!
+    int x = blockIdx.x * elementsInChunk + threadIdx.x;
+    int y = blockIdx.y * elementsInChunk + threadIdx.y;
+    int chunks = (aY + elementsInChunk) / elementsInChunk;
+
+    if (x >= outputSizeX || y >= outputSizeY) return;
+
+    extern __shared__ float sub[];
+    float* As = sub;
+    float* Bs = sub + elementsInChunk * elementsInChunk;
+
+    float sum = 0.0f;
+    for (int chunk = 0; chunk < chunks; chunk++) {
+        // Safely copy data from matrix A
+        if (blockIdx.y * elementsInChunk + threadIdx.x < aX && chunk * elementsInChunk + threadIdx.y < aY) {
+            As[threadIdx.y * elementsInChunk + threadIdx.x] = 
+                A[(chunk * elementsInChunk + threadIdx.y) * aX + blockIdx.y * elementsInChunk + threadIdx.x];
+        } else {
+            As[threadIdx.y * elementsInChunk + threadIdx.x] = 0.0;
+        }
+
+        // Safely copy data from matrix B
+        if (blockIdx.x * elementsInChunk + threadIdx.x < bX && chunk * elementsInChunk + threadIdx.y < bY) {
+            Bs[threadIdx.y * elementsInChunk + threadIdx.x] =
+                B[(chunk * elementsInChunk + threadIdx.y) * bX + blockIdx.x * elementsInChunk + threadIdx.x];
+        } else {
+            Bs[threadIdx.y * elementsInChunk + threadIdx.x] = 0.0;
+        }
+
+        // Run calculations on shared memory matrix
+        __syncthreads();
+        for (int i = 0; i < blockDim.x; i++) {
+            sum += As[i * elementsInChunk + threadIdx.y] * Bs[i * elementsInChunk + threadIdx.x];
+        }
+        __syncthreads();
+    }
+    C[y*outputSizeX + x] = sum;
 }
 
 __global__
@@ -308,11 +397,11 @@ Tensor2D* Tensor2D::multiply(Tensor2D* tensor, Tensor2D* output) {
         int sharedMemorySize = 2 * threadsPerBlock.y * threadsPerBlock.x * sizeof(float);
 
         // Defer calculations on GPU
-        //printf("threads: %dx%d blocks: %dx%d\n", threadsPerBlock.x, threadsPerBlock.y, numBlocks.x, numBlocks.y);
         kMultiplyWithSharedMemory<<<numBlocks, threadsPerBlock, sharedMemorySize>>>(
-                this->getDeviceData(), this->sizeX, this->sizeY,
-                tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
-                output->getDeviceData());
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
     } else {
         // Prepare configuration for CUDA kernel
         int threadsX = Configuration::tensor2DMultiplyBlockSize;
@@ -331,10 +420,12 @@ Tensor2D* Tensor2D::multiply(Tensor2D* tensor, Tensor2D* output) {
         dim3 numBlocks(blocksX, blocksY);
 
         // Defer calculations on GPU
-        kMultiply<<<numBlocks, threadsPerBlock>>>(fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
-                                                  this->getDeviceData(), this->sizeX, this->sizeY,
-                                                  tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
-                                                  output->getDeviceData());
+        kMultiply<<<numBlocks, threadsPerBlock>>>(
+            fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
     }
     return output;
 }
@@ -347,27 +438,45 @@ Tensor2D* Tensor2D::multiplyByTransposition(Tensor2D* tensor, Tensor2D* output) 
         exit(1);
     }
 
-    // Prepare configuration for CUDA kernel
-    int threadsX = Configuration::tensor2DMultiplyBlockSize;
-    int threadsY = Configuration::tensor2DMultiplyBlockSize;
-    int blocksX = Configuration::tensor2DMultiplyBlockNumber == -1
-                   ? (tensor->getSize(Y) + threadsX) / threadsX
-                   : Configuration::tensor2DMultiplyBlockNumber;
-    int blocksY = Configuration::tensor2DMultiplyBlockNumber == -1
-                   ? (this->sizeY + threadsY) / threadsY
-                   : Configuration::tensor2DMultiplyBlockNumber;
-    int fieldsPerBlockX = max(1, (tensor->getSize(Y) + blocksX) / blocksX);
-    int fieldsPerThreadX = max(1, (fieldsPerBlockX + threadsX) / threadsX);
-    int fieldsPerBlockY = max(1, (this->getSize(Y) + blocksY) / blocksY);
-    int fieldsPerThreadY = max(1, (fieldsPerBlockY + threadsY) / threadsY);
-    dim3 threadsPerBlock(threadsX, threadsY);
-    dim3 numBlocks(blocksX, blocksY);
+    // In case of using shared memory, we've got to use dynamic amount of blocks
+    if (Configuration::tensor2DMultiplySharedMemory == 1) {
+        // Prepare configuration for CUDA kernel
+        dim3 threadsPerBlock(Configuration::tensor2DMultiplyBlockSize, Configuration::tensor2DMultiplyBlockSize);
+        dim3 numBlocks((tensor->getSize(Y) + threadsPerBlock.x)/threadsPerBlock.x,
+                       (this->sizeY + threadsPerBlock.y)/threadsPerBlock.y);
+        int sharedMemorySize = 2 * threadsPerBlock.y * threadsPerBlock.x * sizeof(float);
 
-    // Defer calculations on GPU
-    kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
-                                                             this->getDeviceData(), this->sizeX, this->sizeY,
-                                                             tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
-                                                             output->getDeviceData());
+        // Defer calculations on GPU
+        kMultiplyByTranspositionWithSharedMemory<<<numBlocks, threadsPerBlock, sharedMemorySize>>>(
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
+    } else {
+        // Prepare configuration for CUDA kernel
+        int threadsX = Configuration::tensor2DMultiplyBlockSize;
+        int threadsY = Configuration::tensor2DMultiplyBlockSize;
+        int blocksX = Configuration::tensor2DMultiplyBlockNumber == -1
+                       ? (tensor->getSize(Y) + threadsX) / threadsX
+                       : Configuration::tensor2DMultiplyBlockNumber;
+        int blocksY = Configuration::tensor2DMultiplyBlockNumber == -1
+                       ? (this->sizeY + threadsY) / threadsY
+                       : Configuration::tensor2DMultiplyBlockNumber;
+        int fieldsPerBlockX = max(1, (tensor->getSize(Y) + blocksX) / blocksX);
+        int fieldsPerThreadX = max(1, (fieldsPerBlockX + threadsX) / threadsX);
+        int fieldsPerBlockY = max(1, (this->getSize(Y) + blocksY) / blocksY);
+        int fieldsPerThreadY = max(1, (fieldsPerBlockY + threadsY) / threadsY);
+        dim3 threadsPerBlock(threadsX, threadsY);
+        dim3 numBlocks(blocksX, blocksY);
+
+        // Defer calculations on GPU
+        kMultiplyByTransposition<<<numBlocks, threadsPerBlock>>>(
+            fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
+    }
     return output;
 }
 
@@ -379,27 +488,45 @@ Tensor2D* Tensor2D::transposeAndMultiply(Tensor2D* tensor, Tensor2D* output) {
         exit(1);
     }
 
-    // Prepare configuration for CUDA kernel
-    int threadsX = Configuration::tensor2DMultiplyBlockSize;
-    int threadsY = Configuration::tensor2DMultiplyBlockSize;
-    int blocksX = Configuration::tensor2DMultiplyBlockNumber == -1
-                   ? (tensor->getSize(X) + threadsX) / threadsX
-                   : Configuration::tensor2DMultiplyBlockNumber;
-    int blocksY = Configuration::tensor2DMultiplyBlockNumber == -1
-                   ? (this->getSize(X) + threadsY) / threadsY
-                   : Configuration::tensor2DMultiplyBlockNumber;
-    int fieldsPerBlockX = max(1, (tensor->getSize(X) + blocksX) / blocksX);
-    int fieldsPerThreadX = max(1, (fieldsPerBlockX + threadsX) / threadsX);
-    int fieldsPerBlockY = max(1, (this->getSize(X) + blocksY) / blocksY);
-    int fieldsPerThreadY = max(1, (fieldsPerBlockY + threadsY) / threadsY);
-    dim3 threadsPerBlock(threadsX, threadsY);
-    dim3 numBlocks(blocksX, blocksY);
+    // In case of using shared memory, we've got to use dynamic amount of blocks
+    if (Configuration::tensor2DMultiplySharedMemory == 1) {
+        // Prepare configuration for CUDA kernel
+        dim3 threadsPerBlock(Configuration::tensor2DMultiplyBlockSize, Configuration::tensor2DMultiplyBlockSize);
+        dim3 numBlocks((tensor->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
+                       (this->sizeX + threadsPerBlock.y)/threadsPerBlock.y);
+        int sharedMemorySize = 2 * threadsPerBlock.y * threadsPerBlock.x * sizeof(float);
 
-    // Defer calculations on GPU
-    kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
-                                                          this->getDeviceData(), this->sizeX, this->sizeY,
-                                                          tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
-                                                          output->getDeviceData());
+        // Defer calculations on GPU
+        kTransposeAndMultiplyWithSharedMemory<<<numBlocks, threadsPerBlock, sharedMemorySize>>>(
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
+    } else {
+        // Prepare configuration for CUDA kernel
+        int threadsX = Configuration::tensor2DMultiplyBlockSize;
+        int threadsY = Configuration::tensor2DMultiplyBlockSize;
+        int blocksX = Configuration::tensor2DMultiplyBlockNumber == -1
+                       ? (tensor->getSize(X) + threadsX) / threadsX
+                       : Configuration::tensor2DMultiplyBlockNumber;
+        int blocksY = Configuration::tensor2DMultiplyBlockNumber == -1
+                       ? (this->getSize(X) + threadsY) / threadsY
+                       : Configuration::tensor2DMultiplyBlockNumber;
+        int fieldsPerBlockX = max(1, (tensor->getSize(X) + blocksX) / blocksX);
+        int fieldsPerThreadX = max(1, (fieldsPerBlockX + threadsX) / threadsX);
+        int fieldsPerBlockY = max(1, (this->getSize(X) + blocksY) / blocksY);
+        int fieldsPerThreadY = max(1, (fieldsPerBlockY + threadsY) / threadsY);
+        dim3 threadsPerBlock(threadsX, threadsY);
+        dim3 numBlocks(blocksX, blocksY);
+
+        // Defer calculations on GPU
+        kTransposeAndMultiply<<<numBlocks, threadsPerBlock>>>(
+            fieldsPerBlockX, fieldsPerBlockY, fieldsPerThreadX, fieldsPerThreadY,
+            this->getDeviceData(), this->sizeX, this->sizeY,
+            tensor->getDeviceData(), tensor->getSize(X), tensor->getSize(Y),
+            output->getDeviceData()
+        );
+    }
     return output;
 }
 

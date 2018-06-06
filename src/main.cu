@@ -8,12 +8,12 @@
 #include "loss/crossentropy.cuh"
 #include "models/sequential.cuh"
 #include "datasets/mnist.hpp"
+#include "loggers/csv_logger.hpp"
 #include "utils.hpp"
 #include "configuration.cuh"
-#include "csv_logger.hpp"
 
 
-int main() {   
+int main() {
     // Always initialize seed to some random value
     clock_t start, end;
     srand(static_cast<unsigned>(time(0)));

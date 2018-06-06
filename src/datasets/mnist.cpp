@@ -113,8 +113,8 @@ void MNISTDataSet::shuffle() {
     float tmpLabel[10];
 
     // Each image should find new place for itself (randomly)
-    for (int i = 0; i < this->size; i++) {
-        int newPosition = randomInt(0, this->size-1);
+    for (int i = 0; i < sqrt(this->size); i++) {
+        int newPosition = randomInt(sqrt(this->size), this->size-1);
 
         // We cannot simply swap two pointers to these images as we assume later that all images
         // are linearly aligned in memory, one next to the other - this helps with mapping

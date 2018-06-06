@@ -1,27 +1,14 @@
 #include "relu.cuh"
 
 __global__
-void kReLuForward(float *a, int sizeX, int sizeY, float* b) {
+void kReLu(float *A, int aX, int aY, float* B) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
-    if (x < sizeX && y < sizeY) {
-        if (a[y*sizeX + x] < 0.0) {
-            b[y*sizeX + x] = 0;
+    if (x < aX && y < aY) {
+        if (A[y*aX + x] < 0.0) {
+            B[y*aX + x] = 0;
         } else {
-            b[y*sizeX + x] = a[y*sizeX + x];
-        }
-    }
-}
-
-__global__
-void kReLuBackward(float *a, int sizeX, int sizeY, float* b) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    if (x < sizeX && y < sizeY) {
-        if (a[y*sizeX + x] < 0.0) {
-            b[y*sizeX + x] = 0;
-        } else {
-            b[y*sizeX + x] = a[y*sizeX + x];
+            B[y*aX + x] = A[y*aX + x];
         }
     }
 }
@@ -48,7 +35,10 @@ Tensor2D* ReLuLayer::forward(Tensor2D* data) {
     dim3 threadsPerBlock(Configuration::reLuBlockSize, Configuration::reLuBlockSize);
     dim3 numBlocks((data->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (data->getSize(Y) + threadsPerBlock.y)/threadsPerBlock.y);
-    kReLuForward<<<numBlocks, threadsPerBlock>>>(data->getDeviceData(), data->getSize(X), data->getSize(Y), this->outputForward->getDeviceData());
+    kReLu<<<numBlocks, threadsPerBlock>>>(
+        data->getDeviceData(), data->getSize(X), data->getSize(Y),
+        this->outputForward->getDeviceData()
+    );
     return this->outputForward;
 }
  
@@ -56,6 +46,9 @@ Tensor2D* ReLuLayer::backward(Tensor2D* gradients) {
     dim3 threadsPerBlock(Configuration::reLuBlockSize, Configuration::reLuBlockSize);
     dim3 numBlocks((gradients->getSize(X) + threadsPerBlock.x)/threadsPerBlock.x,
                    (gradients->getSize(Y) + threadsPerBlock.y)/threadsPerBlock.y);
-    kReLuBackward<<<numBlocks, threadsPerBlock>>>(gradients->getDeviceData(), gradients->getSize(X), gradients->getSize(Y), gradients->getDeviceData());
+    kReLu<<<numBlocks, threadsPerBlock>>>(
+        gradients->getDeviceData(), gradients->getSize(X), gradients->getSize(Y),
+        gradients->getDeviceData()
+    );
     return new Tensor2D(gradients->getSize(X), gradients->getSize(Y), gradients->getDeviceData());
 }

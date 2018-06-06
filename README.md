@@ -113,7 +113,7 @@ $> ...
 $> make run
 ```
 
-Default values can be found in `src/configuration.h` file.
+Default values can be found in `src/configuration.hpp` file.
 
 ## Experiments/Benchmarks
 
