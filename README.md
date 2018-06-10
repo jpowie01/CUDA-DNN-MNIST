@@ -117,4 +117,148 @@ Default values can be found in `src/configuration.hpp` file.
 
 ## Experiments/Benchmarks
 
-**Will be done in the near future...**
+### Profiling run without Shared Memory
+
+```
+$> nvprof ./build/CUDA-DNN-MNIST
+
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 100
+ BatchSize: 512
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX 1060 6GB
+ Memory Clock Rate (KHz): 4004000
+ Memory Bus Width (bits): 192
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 8
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMultiplySharedMemory: 0
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
+[...]
+
+==14648== Profiling application: ./build/CUDA-DNN-MNIST
+==14648== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   38.42%  16.0404s     23400  685.49us  18.528us  3.7671ms  kMultiplyByTransposition(int, int, int, int, float*, int, int, float*, int, int, float*)
+                   33.15%  13.8379s     27200  508.75us  72.095us  1.3625ms  kMultiply(int, int, int, int, float*, int, int, float*, int, int, float*)
+                   20.91%  8.73106s     23400  373.12us  41.279us  746.52us  kTransposeAndMultiply(int, int, int, int, float*, int, int, float*, int, int, float*)
+                    5.34%  2.22900s     54404  40.971us     479ns  240.51us  [CUDA memcpy HtoD]
+                    0.51%  212.27ms     23400  9.0710us  8.6720us  14.368us  kMeanX(float*, int, int, float*)
+                    0.32%  133.91ms     13600  9.8460us  9.2800us  12.352us  kSoftMaxCrossEntropyLoss(float*, int, int, float*, float*)
+                    0.25%  105.33ms     25300  4.1630us  3.6470us  11.136us  kReLu(float*, int, int, float*)
+                    0.24%  99.087ms     11700  8.4680us  7.9030us  13.088us  kSoftMaxCrossEntropy(float*, int, int, float*, float*)
+                    0.23%  96.608ms     23400  4.1280us     895ns  2.3653ms  kScale(float*, float, int, int)
+                    0.19%  80.514ms     23400  3.4400us     896ns  2.3759ms  kSubtract(float*, float*, int, int)
+                    0.16%  64.817ms     27200  2.3820us  1.1510us  10.784us  kAdd1D(float*, float*, int, int)
+                    0.09%  37.797ms     13600  2.7790us  2.2720us  12.032us  kSoftMaxCrossEntropyAccuracy(float*, int, int, float*, float*)
+                    0.07%  27.193ms     23400  1.1620us     831ns  10.912us  kScale(float*, float, int)
+                    0.06%  27.087ms     23400  1.1570us     831ns  10.112us  kSubtract(float*, float*, int)
+                    0.06%  24.534ms     27200     902ns     480ns  11.520us  [CUDA memcpy DtoH]
+      API calls:   75.15%  41.9718s     23400  1.7937ms  770.97us  6.8354ms  cudaEventSynchronize
+                   21.04%  11.7509s     81604  144.00us  3.5690us  32.886ms  cudaMemcpy
+                    2.14%  1.19280s    282400  4.2230us  3.0980us  6.3342ms  cudaLaunch
+                    0.43%  238.46ms     54414  4.3820us  2.7560us  301.62us  cudaMalloc
+                    0.39%  215.61ms     54400  3.9630us  2.2890us  43.260us  cudaFree
+                    0.31%  174.21ms   1639700     106ns      77ns  355.90us  cudaSetupArgument
+                    0.28%  155.65ms         2  77.825ms  1.7400us  155.65ms  cudaEventCreate
+                    0.13%  74.986ms     46800  1.6020us  1.3010us  25.062us  cudaEventRecord
+                    0.08%  45.967ms    282400     162ns      94ns  326.66us  cudaConfigureCall
+                    0.05%  28.050ms     23400  1.1980us     935ns  286.02us  cudaEventElapsedTime
+                    0.00%  292.09us         1  292.09us  292.09us  292.09us  cudaGetDeviceProperties
+                    0.00%  229.12us        94  2.4370us      98ns  99.937us  cuDeviceGetAttribute
+                    0.00%  43.008us         1  43.008us  43.008us  43.008us  cuDeviceGetName
+                    0.00%  31.665us         1  31.665us  31.665us  31.665us  cuDeviceTotalMem
+                    0.00%  1.6150us         3     538ns     116ns     948ns  cuDeviceGetCount
+                    0.00%     699ns         2     349ns     213ns     486ns  cuDeviceGet
+```
+
+### Profiling run with Shared Memory
+
+```
+$> nvprof ./build/CUDA-DNN-MNIST
+
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 100
+ BatchSize: 512
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX 1060 6GB
+ Memory Clock Rate (KHz): 4004000
+ Memory Bus Width (bits): 192
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 8
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMultiplySharedMemory: 1
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
+[...]
+
+==14615== Profiling application: ./build/CUDA-DNN-MNIST
+==14615== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   28.03%  3.95460s     27200  145.39us  7.7110us  541.05us  kMultiplyWithSharedMemory(float*, int, int, float*, int, int, float*)
+                   26.20%  3.69663s     23400  157.98us  28.480us  305.85us  kTransposeAndMultiplyWithSharedMemory(float*, int, int, float*, int, int, float*)
+                   23.95%  3.37863s     23400  144.39us  8.6080us  307.80us  kMultiplyByTranspositionWithSharedMemory(float*, int, int, float*, int, int, float*)
+                   15.63%  2.20584s     54404  40.545us     479ns  242.81us  [CUDA memcpy HtoD]
+                    1.53%  215.32ms     23400  9.2010us  8.5760us  14.528us  kMeanX(float*, int, int, float*)
+                    0.94%  132.54ms     13600  9.7450us  9.2480us  12.192us  kSoftMaxCrossEntropyLoss(float*, int, int, float*, float*)
+                    0.76%  107.87ms     25300  4.2630us  3.4240us  10.176us  kReLu(float*, int, int, float*)
+                    0.70%  98.539ms     11700  8.4220us  7.8710us  11.584us  kSoftMaxCrossEntropy(float*, int, int, float*, float*)
+                    0.54%  76.761ms     23400  3.2800us     896ns  12.479us  kScale(float*, float, int, int)
+                    0.46%  65.574ms     23400  2.8020us     927ns  10.495us  kSubtract(float*, float*, int, int)
+                    0.45%  64.116ms     27200  2.3570us  1.1510us  11.359us  kAdd1D(float*, float*, int, int)
+                    0.27%  38.277ms     13600  2.8140us  2.4000us  11.808us  kSoftMaxCrossEntropyAccuracy(float*, int, int, float*, float*)
+                    0.18%  25.519ms     23400  1.0900us     831ns  10.464us  kScale(float*, float, int)
+                    0.18%  25.415ms     23400  1.0860us     831ns  9.1830us  kSubtract(float*, float*, int)
+                    0.17%  23.705ms     27200     871ns     768ns  11.904us  [CUDA memcpy DtoH]
+      API calls:   55.62%  15.7338s     23400  672.38us  40.850us  2.9389ms  cudaEventSynchronize
+                   36.66%  10.3698s     81604  127.07us  3.5850us  32.556ms  cudaMemcpy
+                    4.09%  1.15701s    282400  4.0970us  3.0420us  4.1125ms  cudaLaunch
+                    0.97%  275.76ms         2  137.88ms  1.1490us  275.76ms  cudaEventCreate
+                    0.85%  241.33ms     54414  4.4350us  2.8870us  235.44us  cudaMalloc
+                    0.79%  224.37ms     54400  4.1240us  2.5040us  1.0894ms  cudaFree
+                    0.52%  145.86ms   1343700     108ns      76ns  323.20us  cudaSetupArgument
+                    0.25%  71.962ms     46800  1.5370us  1.2490us  319.73us  cudaEventRecord
+                    0.13%  37.676ms    282400     133ns      88ns  295.90us  cudaConfigureCall
+                    0.10%  28.298ms     23400  1.2090us     917ns  266.18us  cudaEventElapsedTime
+                    0.00%  270.00us         1  270.00us  270.00us  270.00us  cudaGetDeviceProperties
+                    0.00%  228.16us        94  2.4270us      97ns  99.357us  cuDeviceGetAttribute
+                    0.00%  42.754us         1  42.754us  42.754us  42.754us  cuDeviceGetName
+                    0.00%  32.095us         1  32.095us  32.095us  32.095us  cuDeviceTotalMem
+                    0.00%  1.7430us         3     581ns     106ns  1.0910us  cuDeviceGetCount
+                    0.00%     714ns         2     357ns     227ns     487ns  cuDeviceGet
+```
+
+**More will be done in the near future...**
