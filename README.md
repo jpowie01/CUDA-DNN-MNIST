@@ -117,6 +117,21 @@ Default values can be found in `src/configuration.hpp` file.
 
 ## Experiments/Benchmarks
 
+To run my experiments please use `run.py` script from `experiments` directory like this:
+
+```bash
+$> python3 experiments/run.py --logs-dir="logs_100/GTX 1060"
+```
+
+If you want to run above experiments on one of your multi-GPU setup, remember to use
+`CUDA_VISIBLE_DEVICES` variable like this:
+
+```bash
+$> CUDA_VISIBLE_DEVICES=1 python3 experiments/run.py --logs-dir="logs_100/GTX 780 Ti"
+```
+
+**NOTE:** All experiment logs that I've collected are available in `experiments/logs.zip` file.
+
 ### Profiling run without Shared Memory
 
 ```
