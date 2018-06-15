@@ -138,10 +138,10 @@ Below experiments mesure execution time on GPU for forward and backward passes o
 neural networks. All of them have a single hidden layer with different number of neurons:
 
 ```cpp
-    SequentialModel* model = new SequentialModel(optimizer, loss);
-    model->addLayer(new DenseLayer(28*28, 100));
-    model->addLayer(new ReLuLayer(100));
-    model->addLayer(new DenseLayer(100, 10));
+SequentialModel* model = new SequentialModel(optimizer, loss);
+model->addLayer(new DenseLayer(28*28, 100));
+model->addLayer(new ReLuLayer(100));
+model->addLayer(new DenseLayer(100, 10));
 ```
 
 Networks were labelled as:
@@ -156,11 +156,15 @@ All experiments were performed on three Nvidia GPUs:
  - GTX 1060,
  - GTX Titan X.
 
-### Experiment 1 - Different Batch Size
+Once all logs were collected to one directory, I've prepared a Jupyter Notebook that helped me
+to generate plots you can find above. Notebook is available in `experiments` directory and requires
+`matplotlib` with `pandas`.
+
+### Experiment #1 - Different Batch Size
 
 In this experiment I've tried to apply several different Batch Sizes to measure time that was
-needed for forward and backward pass over a network. All of below experiments used fixed number
-of threads per block (equal to 16) and dynamic number of blocks (enough to calculate output matrix
+needed for forward and backward pass over a network. All of below experiments used fixed Number
+of Threads per Block (equal to 16) and dynamic Number of Blocks (enough to calculate output matrix
 with final result).
 
 It's not a big surprise that larger batch size = smaller execution time due to less communication
@@ -196,7 +200,7 @@ between host and device.
 ![Large Network](assets/experiment1_large_backward_first.png)
 ![Large Network](assets/experiment1_large_backward_second.png)
 
-### Experiment 2 - Different number of Threads per Block
+### Experiment #2 - Different number of Threads per Block
 
 In this experiment I've applied a few different number of Threads per Block. During this
 experiment Batch Size was fixed to 128 images, while number of Blocks was calculated
@@ -226,7 +230,7 @@ dynamically (similarly to previous experiment).
 
 ![Large Network](assets/experiment2_large_backward.png)
 
-### Experiment 3 - Different Number of Blocks
+### Experiment #3 - Different Number of Blocks
 
 In this experiment I've tried several different Number of Blocks, while Number of Threads
 was fixed and equals 16. Also, Batch Size was fixed to 128 images.
@@ -255,13 +259,13 @@ was fixed and equals 16. Also, Batch Size was fixed to 128 images.
 
 ![Large Network](assets/experiment3_large_backward.png)
 
-### Experiment 4 - Matrix multiplication using Shared Memory
+### Experiment #4 - Matrix multiplication using Shared Memory
 
 This experiment shows time needed to execute forward and backward pass on different GPUs
 using Shared Memory as an optimization for matrix multiplication. I've tried to apply several
 different values for Batch Size, while Number of Threads was fixed and equal 16.
 
-If you compare below values with above experiments, you can see a significant boost in
+If you compare below values with Experiment #1, you can see a significant boost in
 execution time (at least 2x)!
 
 #### Small Network - Forward Pass
@@ -288,7 +292,7 @@ execution time (at least 2x)!
 
 ![Large Network](assets/experiment4_large_backward.png)
 
-### Experiment 5 - Trying to find best values - Without Shared Memory
+### Experiment #5 - Trying to find best values - Without Shared Memory
 
 In this experiment I've tried to combine all best values from above plots and
 find optimum combination of execution parameters. Below experiments tries to find
@@ -318,7 +322,7 @@ parameters for different Batch Sizes and uses implementation **without** Shared 
 
 ![Large Network](assets/experiment5_large_backward.png)
 
-### Experiment 6 - Trying to find best values - With Shared Memory
+### Experiment #6 - Trying to find best values - With Shared Memory
 
 This experiment is very similar to the one above. This one tries to find best values for
 implementation of matrix multiplication using Shared Memory. Also, Number of Blocks is
