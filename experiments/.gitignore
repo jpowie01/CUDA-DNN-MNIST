@@ -1,0 +1,5 @@
+# Ignore logs directory (after unzip)
+logs
+
+# Ignore notebook checkpoints
+.ipynb_checkpoints
