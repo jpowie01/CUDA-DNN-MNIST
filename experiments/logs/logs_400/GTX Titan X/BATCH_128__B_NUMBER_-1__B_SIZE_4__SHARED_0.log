@@ -1,0 +1,51 @@
+mkdir -p logs
+./build/CUDA-DNN-MNIST
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 2
+ BatchSize: 128
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX TITAN X
+ Memory Clock Rate (KHz): 3505000
+ Memory Bus Width (bits): 384
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 4
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMultiplySharedMemory: 0
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
+Epoch 0:
+  - [Train] Loss=3.23813
+  - [Train] Accuracy=1.73444%
+  - [Train] Total Forward Time=1166.97549ms
+  - [Train] Total Backward Time=2761.96444ms
+  - [Train] Batch Forward Time=2.49354ms
+  - [Train] Batch Backward Time=5.90163ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.29367%
+
+Epoch 1:
+  - [Train] Loss=3.15814
+  - [Train] Accuracy=1.70439%
+  - [Train] Total Forward Time=1162.31971ms
+  - [Train] Total Backward Time=2754.25111ms
+  - [Train] Batch Forward Time=2.48359ms
+  - [Train] Batch Backward Time=5.88515ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.43389%
+

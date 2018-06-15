@@ -132,6 +132,227 @@ $> CUDA_VISIBLE_DEVICES=1 python3 experiments/run.py --logs-dir="logs_100/GTX 78
 
 **NOTE:** All experiment logs that I've collected are available in `experiments/logs.zip` file.
 
+### Introduction
+
+Below experiments mesure execution time on GPU for forward and backward passes over three similar
+neural networks. All of them have a single hidden layer with different number of neurons:
+
+```cpp
+    SequentialModel* model = new SequentialModel(optimizer, loss);
+    model->addLayer(new DenseLayer(28*28, 100));
+    model->addLayer(new ReLuLayer(100));
+    model->addLayer(new DenseLayer(100, 10));
+```
+
+Networks were labelled as:
+
+ - Small Network - 100 neurons in hidden layer,
+ - Medium Network - 200 neurons in hidden layer,
+ - Large Network - 400 neurons in hidden layer.
+
+All experiments were performed on three Nvidia GPUs:
+
+ - GTX 780 Ti,
+ - GTX 1060,
+ - GTX Titan X.
+
+### Experiment 1 - Different Batch Size
+
+In this experiment I've tried to apply several different Batch Sizes to measure time that was
+needed for forward and backward pass over a network. All of below experiments used fixed number
+of threads per block (equal to 16) and dynamic number of blocks (enough to calculate output matrix
+with final result).
+
+It's not a big surprise that larger batch size = smaller execution time due to less communication
+between host and device.
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment1_small_forward_first.png)
+![Small Network](assets/experiment1_small_forward_second.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment1_medium_forward_first.png)
+![Medium Network](assets/experiment1_medium_forward_second.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment1_large_forward_first.png)
+![Large Network](assets/experiment1_large_forward_second.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment1_small_backward_first.png)
+![Small Network](assets/experiment1_small_backward_second.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment1_medium_backward_first.png)
+![Medium Network](assets/experiment1_medium_backward_second.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment1_large_backward_first.png)
+![Large Network](assets/experiment1_large_backward_second.png)
+
+### Experiment 2 - Different number of Threads per Block
+
+In this experiment I've applied a few different number of Threads per Block. During this
+experiment Batch Size was fixed to 128 images, while number of Blocks was calculated
+dynamically (similarly to previous experiment).
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment2_small_forward.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment2_medium_forward.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment2_large_forward.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment2_small_backward.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment2_medium_backward.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment2_large_backward.png)
+
+### Experiment 3 - Different Number of Blocks
+
+In this experiment I've tried several different Number of Blocks, while Number of Threads
+was fixed and equals 16. Also, Batch Size was fixed to 128 images.
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment3_small_forward.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment3_medium_forward.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment3_large_forward.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment3_small_backward.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment3_medium_backward.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment3_large_backward.png)
+
+### Experiment 4 - Matrix multiplication using Shared Memory
+
+This experiment shows time needed to execute forward and backward pass on different GPUs
+using Shared Memory as an optimization for matrix multiplication. I've tried to apply several
+different values for Batch Size, while Number of Threads was fixed and equal 16.
+
+If you compare below values with above experiments, you can see a significant boost in
+execution time (at least 2x)!
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment4_small_forward.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment4_medium_forward.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment4_large_forward.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment4_small_backward.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment4_medium_backward.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment4_large_backward.png)
+
+### Experiment 5 - Trying to find best values - Without Shared Memory
+
+In this experiment I've tried to combine all best values from above plots and
+find optimum combination of execution parameters. Below experiments tries to find
+parameters for different Batch Sizes and uses implementation **without** Shared Memory.
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment5_small_forward.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment5_medium_forward.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment5_large_forward.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment5_small_backward.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment5_medium_backward.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment5_large_backward.png)
+
+### Experiment 6 - Trying to find best values - With Shared Memory
+
+This experiment is very similar to the one above. This one tries to find best values for
+implementation of matrix multiplication using Shared Memory. Also, Number of Blocks is
+calculated dynamically as it cannot be changed in my implementation.
+
+On below charts you can find some strange behavious which shows that olders GPUs are faster
+than newer. I didn't find the root cause for this one. I bet that this has to be somehow
+connected with memory coalescing as it was only found during backward pass (which uses
+matrix multiplication with transpositions).
+
+#### Small Network - Forward Pass
+
+![Small Network](assets/experiment6_small_forward.png)
+
+#### Medium Network - Forward Pass
+
+![Medium Network](assets/experiment6_medium_forward.png)
+
+#### Large Network - Forward Pass
+
+![Large Network](assets/experiment6_large_forward.png)
+
+#### Small Network - Backward Pass
+
+![Small Network](assets/experiment6_small_backward.png)
+
+#### Medium Network - Backward Pass
+
+![Medium Network](assets/experiment6_medium_backward.png)
+
+#### Large Network - Backward Pass
+
+![Large Network](assets/experiment6_large_backward.png)
+
 ### Profiling run without Shared Memory
 
 ```
@@ -275,5 +496,3 @@ $> nvprof ./build/CUDA-DNN-MNIST
                     0.00%  1.7430us         3     581ns     106ns  1.0910us  cuDeviceGetCount
                     0.00%     714ns         2     357ns     227ns     487ns  cuDeviceGet
 ```
-
-**More will be done in the near future...**

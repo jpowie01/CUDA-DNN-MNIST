@@ -1,0 +1,51 @@
+mkdir -p logs
+./build/CUDA-DNN-MNIST
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 2
+ BatchSize: 128
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX 1060 6GB
+ Memory Clock Rate (KHz): 4004000
+ Memory Bus Width (bits): 192
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 32
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMultiplySharedMemory: 0
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
+Epoch 0:
+  - [Train] Loss=3.25139
+  - [Train] Accuracy=0.96488%
+  - [Train] Total Forward Time=369.58672ms
+  - [Train] Total Backward Time=1420.28931ms
+  - [Train] Batch Forward Time=0.78972ms
+  - [Train] Batch Backward Time=3.03481ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=1.65264%
+
+Epoch 1:
+  - [Train] Loss=3.16954
+  - [Train] Accuracy=0.99159%
+  - [Train] Total Forward Time=368.82003ms
+  - [Train] Total Backward Time=1420.47792ms
+  - [Train] Batch Forward Time=0.78808ms
+  - [Train] Batch Backward Time=3.03521ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=1.78285%
+

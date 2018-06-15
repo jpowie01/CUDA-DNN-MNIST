@@ -9,3 +9,7 @@ data/
 
 # macOS
 .DS_Store
+
+# Python stuff
+venv
+*.pyc

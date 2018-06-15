@@ -1,0 +1,51 @@
+mkdir -p logs
+./build/CUDA-DNN-MNIST
+=====================================
+            Configuration
+=====================================
+ NumberOfEpochs: 2
+ BatchSize: 16
+ LearningRate: 1.000000e-06
+=====================================
+
+=====================================
+         CUDA Configuration
+=====================================
+ Device name: GeForce GTX 780 Ti
+ Memory Clock Rate (KHz): 3500000
+ Memory Bus Width (bits): 384
+-------------------------------------
+ Tensor2DAddBlockSize: 8
+ Tensor2DSubtractBlockSize: 8
+ Tensor2DScaleBlockSize: 8
+ Tensor2DMultiplyBlockSize: 16
+ Tensor2DMultiplyBlockNumber: -1
+ Tensor2DMultiplySharedMemory: 1
+ Tensor2DMeanBlockSize: 8
+-------------------------------------
+ ReLuBlockSize: 8
+-------------------------------------
+ CrossEntropyGetMetricBlockSize: 64
+ CrossEntropyCalculateBlockSize: 64
+=====================================
+
+Epoch 0:
+  - [Train] Loss=3.24177
+  - [Train] Accuracy=1.83167%
+  - [Train] Total Forward Time=525.27034ms
+  - [Train] Total Backward Time=1024.91507ms
+  - [Train] Batch Forward Time=0.14007ms
+  - [Train] Batch Backward Time=0.27331ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.52000%
+
+Epoch 1:
+  - [Train] Loss=3.18840
+  - [Train] Accuracy=1.83833%
+  - [Train] Total Forward Time=525.70826ms
+  - [Train] Total Backward Time=1025.46067ms
+  - [Train] Batch Forward Time=0.14019ms
+  - [Train] Batch Backward Time=0.27346ms
+  - [Test] Loss=nan
+  - [Test] Accuracy=2.50000%
+

@@ -1,0 +1,3 @@
+epoch,trainingLoss,trainingAccuracy,testLoss,testAccuracy,totalForwardTime,totalBackwardTime,batchForwardTime,batchBackwardTime
+0,3.25397,1.42743,nan,2.19351,536.747,661.93,0.572835,0.706436
+1,3.18876,1.35072,nan,2.27364,536.156,661.442,0.572205,0.705915
